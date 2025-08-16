@@ -53,36 +53,6 @@ body {
   min-height: 100vh;
 }
 
-/* Centered flexbox */
-.center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
-
-/* Splash page */
-.splash {
-  text-align: center;
-}
-.splash .logo {
-  font-size: 3rem;
-  font-weight: bold;
-  letter-spacing: 2px;
-  color: #4a7fe3;
-}
-.splash img {
-  width: 80px;
-  height: 80px;
-  margin-bottom: 15px;
-}
-.splash .tagline {
-  font-size: 1.2rem;
-  margin-top: 10px;
-  color: #7ed6df;
-  font-style: italic;
-}
-
 /* Login Page */
 .login-container {
   background: #ffffff;
@@ -119,7 +89,6 @@ body {
 /* Buttons */
 .btn {
   background: linear-gradient(135deg, #6a9ff8, #7ed6df);
-  
   border: none;
   padding: 10px 20px;
   border-radius: 6px;
@@ -170,6 +139,7 @@ body {
   width: 20px;
   height: 20px;
 }
+
 /* Background image for 1.html */
 body.map-bg {
   position: relative;
@@ -180,21 +150,18 @@ body.map-bg {
   background-size: cover;
 }
 
-/* Dark overlay to reduce brightness (instead of lowering body opacity) */
 body.map-bg::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(255, 255, 255, 0.7); /* white overlay with 70% opacity */
+  background: rgba(255, 255, 255, 0.7);
   z-index: 0;
 }
 
-/* Ensure content stays above overlay */
 .container, header, footer {
   position: relative;
   z-index: 1;
 }
-
 
 /* Worker service cards */
 .services {
@@ -223,22 +190,20 @@ body.map-bg::before {
   transition: transform 0.3s ease-in-out;
 }
 
-/* 🔹 Hover Effects */
 .service-card:hover {
   background: white;
   transform: translateY(-8px);
   box-shadow: 0 6px 20px rgba(0,0,0,0.15);
 }
-
 .service-card:hover img {
   transform: scale(1.1);
 }
-
 .service-card h3 {
   margin: 8px 0 0;
   font-size: 16px;
   color: #333;
 }
+
 /* Notification Bar */
 .notification-bar {
   background: #4a7fe3;
@@ -294,6 +259,7 @@ body.map-bg::before {
   border-radius: 6px;
   border: 1px solid #ccc;
 }
+
 .back-btn {
   display: inline-block;
   margin-top: 10px;
