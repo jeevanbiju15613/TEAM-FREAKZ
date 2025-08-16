@@ -1,0 +1,241 @@
+/* style.css - pastel blue theme */
+/* HEADER NAVBAR */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(to right, #6a9ff8, #91c2ff);
+  padding: 12px 40px;
+  color: white;
+  font-weight: bold;
+}
+
+header .logo {
+  font-size: 22px;
+  letter-spacing: 1px;
+}
+
+header .nav-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+header .login-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: white;
+  color: #4a7fe3;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+header .login-btn:hover {
+  background: #e8f0ff;
+  color: #2b5bcf;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+body {
+  background-color: #e6f0fa; /* pastel blue background */
+  color: #2f3542;
+  min-height: 100vh;
+}
+
+/* Centered flexbox */
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* Splash page */
+.splash {
+  text-align: center;
+}
+.splash .logo {
+  font-size: 3rem;
+  font-weight: bold;
+  letter-spacing: 2px;
+  color: #4a7fe3;
+}
+.splash img {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 15px;
+}
+.splash .tagline {
+  font-size: 1.2rem;
+  margin-top: 10px;
+  color: #7ed6df;
+  font-style: italic;
+}
+
+/* Login Page */
+.login-container {
+  background: #ffffff;
+  color: #2f3542;
+  padding: 30px;
+  border-radius: 12px;
+  width: 320px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  text-align: center;
+}
+
+.login-container h2 {
+  margin-bottom: 20px;
+  color: #4a7fe3;
+}
+
+.login-container label {
+  display: block;
+  font-weight: bold;
+  margin: 10px 0 5px;
+  text-align: left;
+  color: #2f3542;
+}
+
+.login-container input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: none;
+  border-radius: 6px;
+  background-color: #f1f6fc;
+}
+
+/* Buttons */
+.btn {
+  background: linear-gradient(135deg, #6a9ff8, #7ed6df);
+  
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.3s;
+}
+.btn:hover {
+  background: #4a7fe3;
+}
+
+.forgot {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #57606f;
+}
+
+.account-section {
+  margin-top: 20px;
+  font-weight: bold;
+  color: #2f3542;
+}
+
+.account-buttons {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 15px;
+}
+
+.account-btn {
+  background-color: #f1f6fc;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: bold;
+  color: #2f3542;
+}
+.account-btn:hover {
+  background-color: #d7e6fb;
+}
+.account-btn img {
+  width: 20px;
+  height: 20px;
+}
+/* Background image for 1.html */
+body.map-bg {
+  position: relative;
+  min-height: 100vh;
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: url("map.jpg") no-repeat center center fixed;
+  background-size: cover;
+}
+
+/* Dark overlay to reduce brightness (instead of lowering body opacity) */
+body.map-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.7); /* white overlay with 70% opacity */
+  z-index: 0;
+}
+
+/* Ensure content stays above overlay */
+.container, header, footer {
+  position: relative;
+  z-index: 1;
+}
+
+
+/* Worker service cards */
+.services {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 30px;
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.service-card {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+  text-align: center;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transition: all 0.3s ease-in-out;
+  cursor: pointer;
+}
+
+.service-card img {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 10px;
+  transition: transform 0.3s ease-in-out;
+}
+
+/* 🔹 Hover Effects */
+.service-card:hover {
+  background: white;
+  transform: translateY(-8px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.service-card:hover img {
+  transform: scale(1.1);
+}
+
+.service-card h3 {
+  margin: 8px 0 0;
+  font-size: 16px;
+  color: #333;
+}
