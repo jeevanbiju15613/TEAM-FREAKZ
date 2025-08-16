@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - NearMe</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .register-container {
+      max-width: 500px;
+      margin: 80px auto;
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .register-container h2 {
+      text-align: center;
+      color: #4a7fe3;
+      margin-bottom: 20px;
+    }
+    .register-form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .register-form input, .register-form select, .register-form textarea {
+      padding: 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 0.95rem;
+    }
+    .register-form button {
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      background: #4a7fe3;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .register-form button:hover {
+      background: #365dcf;
+    }
+    .register-container p {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: #555;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">NEARME</div>
+  </header>
+
+  <div class="register-container">
+    <h2>Create Account</h2>
+    <form class="register-form" id="registerForm">
+
+      <label for="role">I am a:</label>
+      <select id="role" required>
+        <option value="">-- Select --</option>
+        <option value="user">User</option>
+        <option value="worker">Worker</option>
+      </select>
+
+      <input type="text" id="name" placeholder="Full Name" required>
+      <input type="email" id="email" placeholder="Email" required>
+      <input type="text" id="username" placeholder="Username" required>
+      <input type="password" id="password" placeholder="Password" required>
+      <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+
+      <!-- Worker-specific fields -->
+      <div id="workerFields" class="hidden">
+        <input type="text" id="phone" placeholder="Phone Number">
+        <input type="text" id="address" placeholder="Address (City, Area)">
+        <input type="text" id="pincode" placeholder="Pin Code">
+        <textarea id="skills" rows="3" placeholder="Skills / Qualifications"></textarea>
+        <input type="number" id="experience" placeholder="Years of Experience">
+        <label>Upload Profile Photo:</label>
+        <input type="file" id="photo" accept="image/*">
+      </div>
+
+      <button type="submit">Register</button>
+    </form>
+    <p>Already have an account? <a href="login.html">Login</a></p>
+  </div>
+
+  <script>
+    const roleSelect = document.getElementById("role");
+    const workerFields = document.getElementById("workerFields");
+
+    roleSelect.addEventListener("change", function() {
+      if (this.value === "worker") {
+        workerFields.classList.remove("hidden");
+      } else {
+        workerFields.classList.add("hidden");
+      }
+    });
+
+    document.getElementById("registerForm").addEventListener("submit", function(event) {
+      event.preventDefault();
+
+      let password = document.getElementById("password").value;
+      let confirmPassword = document.getElementById("confirmPassword").value;
+
+      if (password !== confirmPassword) {
+        alert("❌ Passwords do not match!");
+        return;
+      }
+
+      let role = roleSelect.value;
+      if (role === "worker") {
+        alert("✅ Worker registered successfully! Your profile will be visible for bookings.");
+        window.location.href = "login.html";
+      } else {
+        alert("✅ User registered successfully! You can now login.");
+        window.location.href = "login.html";
+      }
+    });
+  </script>
+
+</body>
+</html>

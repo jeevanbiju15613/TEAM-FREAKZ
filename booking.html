@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book a Worker - NearMe</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="booking-page">
+
+  <!-- Header -->
+  <header>
+    <div class="logo">NEARME</div>
+    <div class="nav-right">
+      <button class="login-btn">Login</button>
+    </div>
+  </header>
+
+  <!-- Notification Bar -->
+  <div class="notification-bar">
+    ✅ Your booking with <b>Electrician Rahul</b> is confirmed!
+  </div>
+
+  <!-- Booking Form -->
+  <div class="container">
+    <h2>🔧 Book a Worker</h2>
+    <form class="booking-form">
+      <label for="worker">Choose Worker</label>
+      <select id="worker">
+        <option>Electrician Rahul</option>
+        <option>Plumber Suresh</option>
+        <option>Cleaner Anita</option>
+      </select>
+
+      <label for="date">Select Date</label>
+      <input type="date" id="date">
+
+      <label for="time">Select Time</label>
+      <input type="time" id="time">
+
+      <button type="submit" class="book-btn">Confirm Booking</button>
+<p id="confirmation" style="display:none; color:green; margin-top:15px; font-weight:bold;">
+  ✅ Booking Confirmed! You can check notifications for updates.
+</p>
+<a href="1.html" class="back-btn">⬅ Back to Services</a>
+
+    </form>
+  </div>
+<script>
+  const form = document.querySelector(".booking-form");
+  const confirmation = document.getElementById("confirmation");
+
+  form.addEventListener("submit", function(event) {
+    event.preventDefault(); // stop page reload
+    confirmation.style.display = "block";
+  });
+</script>
+
+</body>
+</html>
