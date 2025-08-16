@@ -17,6 +17,8 @@
       position: relative;
       height: 100%;
       background: url("map.jpg") no-repeat center center/cover;
+      opacity: 40%;
+      z-index: 0;
     }
 
     .intro::before {
@@ -30,6 +32,7 @@
       align-items: center;
       justify-content: center;
       gap: 10px;
+      z-index: 1;
     }
 
     .logo-title img {
@@ -43,7 +46,7 @@
       left: 50%;
       transform: translate(-50%, -50%);
       text-align: center;
-      color: white;
+      color:black;
       z-index: 1;
     }
   
@@ -58,13 +61,13 @@
     .intro-content p {
       margin-top: 10px;
       font-size: 1.2em;
-      color: #f1f2f6;
+      color: black;
     }
   </style>
 </head>
 <body>
 
-  <div class="intro">
+  <div class="intro"></div>
     <div class="intro-content">
        <div class="logo-title">
         <img src="worker.png" alt="Worker Logo">
@@ -72,7 +75,7 @@
       </div>
       <p>Find services around you instantly</p>
     </div>
-  </div>
+  
 
   <script>
     // Redirect to main page after 3 seconds
