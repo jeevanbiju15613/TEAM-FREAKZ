@@ -13,8 +13,19 @@ header {
 header .logo {
   font-size: 22px;
   letter-spacing: 1px;
+  color: black;
 }
+ .logo-title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+ }
 
+    .logo-title img {
+      width: 50px;  /* adjust size */
+      height: auto;
+    }
 header .nav-right {
   display: flex;
   align-items: center;
