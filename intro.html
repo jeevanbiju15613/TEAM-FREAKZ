@@ -25,7 +25,17 @@
       inset: 0;
       background: rgba(0, 0, 0, 0.4); /* dark overlay */
     }
+ .logo-title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
 
+    .logo-title img {
+      width: 60px;  /* adjust size */
+      height: auto;
+    }
     /* Centered content */
     .intro-content {
       position: absolute;
@@ -36,11 +46,13 @@
       color: white;
       z-index: 1;
     }
+  
+
 
     .intro-content h1 {
       font-size: 3em;
       margin: 0;
-      color: #4a7fe3; /* pastel blue */
+      color: black; /* pastel blue */
     }
 
     .intro-content p {
@@ -54,7 +66,10 @@
 
   <div class="intro">
     <div class="intro-content">
-      <h1>NEARME</h1>
+       <div class="logo-title">
+        <img src="worker.png" alt="Worker Logo">
+        <h1><span style="color: red;">N</span>EAR <span style="color: red;">M</span>E</h1>
+      </div>
       <p>Find services around you instantly</p>
     </div>
   </div>
