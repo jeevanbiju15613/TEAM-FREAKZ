@@ -152,29 +152,36 @@
     <p style="text-align:center; color:black;">Choose the type of worker you need</p>
 
     <!-- Worker Grid -->
-    <div class="grid">
-      <div class="card" onclick="window.location.href='booking.html'">
-        <img src="cleaner.jpg" alt="Cleaner">
-        <p>Cleaner</p>
-      </div>
-      <div class="card" onclick="window.location.href='booking.html'">
-        <img src="electrician.jpg" alt="Electrician">
-        <p>Electrician</p>
-      </div>
-      <div class="card" onclick="window.location.href='booking.html'">
-        <img src="plumber.jpg" alt="Plumber">
-        <p>Plumber</p>
-      </div>
-      <div class="card" onclick="window.location.href='booking.html'">
-        <img src="coolie.jpg" alt="Coolie">
-        <p>Coolie</p>
-      </div>
-      <div class="card" onclick="window.location.href='booking.html'">
-        <img src="mechanic.jpg" alt="Mechanic">
-        <p>Mechanic</p>
-      </div>
-    </div>
+    <!-- After Login Services Page -->
+<div class="grid">
+  <div class="card" onclick="goToBooking('Cleaner')">
+    <img src="cleaner.jpg" alt="Cleaner">
+    <p>Cleaner</p>
   </div>
+  <div class="card" onclick="goToBooking('Electrician')">
+    <img src="electrician.jpg" alt="Electrician">
+    <p>Electrician</p>
+  </div>
+  <div class="card" onclick="goToBooking('Plumber')">
+    <img src="plumber.jpg" alt="Plumber">
+    <p>Plumber</p>
+  </div>
+  <div class="card" onclick="goToBooking('Coolie')">
+    <img src="coolie.jpg" alt="Coolie">
+    <p>Coolie</p>
+  </div>
+  <div class="card" onclick="goToBooking('Mechanic')">
+    <img src="mechanic.jpg" alt="Mechanic">
+    <p>Mechanic</p>
+  </div>
+</div>
+
+<script>
+  function goToBooking(serviceType) {
+    // Redirect to booking.html with the service type in URL
+    window.location.href = "booking.html?service=" + encodeURIComponent(serviceType);
+  }
+</script>
 
   <!-- Footer -->
   <footer>

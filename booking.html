@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Book a Worker - NearMe</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body class="booking-page">
 
@@ -12,7 +12,7 @@
   <header>
     <div class="logo">NEARME</div>
     <div class="nav-right">
-      <button class="login-btn">Login</button>
+      <button class="login-btn" onclick="window.location.href='login.html'">Login</button>
     </div>
   </header>
 
@@ -24,7 +24,7 @@
   <!-- Booking Form -->
   <div class="container">
     <h2>🔧 Book a Worker</h2>
-    <form class="booking-form">
+    <form class="booking-form" id="bookingForm">
       <label for="worker">Choose Worker</label>
       <select id="worker" name="worker">
         <option>Electrician Rahul</option>
@@ -39,7 +39,7 @@
       <input type="time" id="time" name="time">
 
       <button type="submit" class="book-btn">Confirm Booking</button>
-      
+
       <p id="confirmation" style="display:none; color:green; margin-top:15px; font-weight:bold;">
         ✅ Booking Confirmed! You can check notifications for updates.
       </p>
@@ -48,22 +48,92 @@
   </div>
 
 <script>
-  const form = document.querySelector(".booking-form");
-  const confirmation = document.getElementById("confirmation");
-  const notificationBar = document.querySelector(".notification-bar");
-  const workerSelect = document.getElementById("worker");
-  const workerName = document.getElementById("workerName");
+  (function () {
+    const form = document.getElementById("bookingForm");
+    const workerSelect = document.getElementById("worker");
+    const dateInput = document.getElementById("date");
+    const timeInput = document.getElementById("time");
+    const workerName = document.getElementById("workerName");
+    const notificationBar = document.querySelector(".notification-bar");
+    const confirmation = document.getElementById("confirmation");
 
-  form.addEventListener("submit", function(event) {
-    event.preventDefault(); // prevent page reload
+    const urlParams = new URLSearchParams(window.location.search);
+    let serviceTypeFromUrl = urlParams.get("type");
 
-    // Show worker name in the top notification bar
-    workerName.textContent = workerSelect.value;
+    function ensureOptionExists(selectEl, text) {
+      for (let i = 0; i < selectEl.options.length; i++) {
+        if (selectEl.options[i].text === text) return;
+      }
+      const opt = document.createElement("option");
+      opt.text = text;
+      selectEl.add(opt, 0);
+    }
 
-    // Show notifications
-    notificationBar.style.display = "block";
-    confirmation.style.display = "block";
-  });
+    // 🔹 Restore pending booking (if exists)
+    let pendingBooking = null;
+    try {
+      pendingBooking = JSON.parse(localStorage.getItem("pendingBooking"));
+    } catch (e) { pendingBooking = null; }
+
+    const effectiveServiceType = serviceTypeFromUrl || (pendingBooking && pendingBooking.serviceType) || null;
+
+    if (effectiveServiceType) {
+      const lower = effectiveServiceType.toLowerCase();
+      const opts = Array.from(workerSelect.options);
+      workerSelect.innerHTML = "";
+      opts.forEach(o => {
+        if (o.text.toLowerCase().includes(lower)) {
+          workerSelect.add(o);
+        }
+      });
+      if (workerSelect.options.length === 0 && pendingBooking && pendingBooking.worker) {
+        ensureOptionExists(workerSelect, pendingBooking.worker);
+      }
+    }
+
+    if (pendingBooking) {
+      if (pendingBooking.worker) {
+        ensureOptionExists(workerSelect, pendingBooking.worker);
+        workerSelect.value = pendingBooking.worker;
+      }
+      if (pendingBooking.date) dateInput.value = pendingBooking.date;
+      if (pendingBooking.time) timeInput.value = pendingBooking.time;
+    }
+
+    // 🔹 Handle booking form submit
+    form.addEventListener("submit", function (ev) {
+      ev.preventDefault();
+
+      const chosenWorker = workerSelect.value;
+      const chosenDate = dateInput.value;
+      const chosenTime = timeInput.value;
+
+      if (!chosenWorker || !chosenDate || !chosenTime) {
+        alert("Please fill all fields.");
+        return;
+      }
+
+      const loggedIn = localStorage.getItem("loggedIn") === "true";
+
+      if (!loggedIn) {
+        // save booking and redirect to login
+        const bookingData = { worker: chosenWorker, date: chosenDate, time: chosenTime, serviceType: effectiveServiceType };
+        localStorage.setItem("pendingBooking", JSON.stringify(bookingData));
+
+        // 🔹 FIXED: include current booking page URL so after login → return here
+        const loginUrl = "login.html?redirect=" + encodeURIComponent("booking.html");
+        window.location.href = loginUrl;
+        return;
+      }
+
+      // ✅ Already logged in → confirm booking
+      workerName.textContent = chosenWorker;
+      notificationBar.style.display = "block";
+      confirmation.style.display = "block";
+
+      localStorage.removeItem("pendingBooking");
+    });
+  })();
 </script>
 
 </body>

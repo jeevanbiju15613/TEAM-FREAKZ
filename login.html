@@ -1,60 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Login - NearMe</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    .login-container {
-      max-width: 400px;
-      margin: 80px auto;
-      background: white;
-      padding: 25px;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    .login-container h2 {
-      text-align: center;
-      color: #4a7fe3;
-      margin-bottom: 20px;
-    }
-    .login-form {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-    .login-form input, .login-form select {
-      padding: 12px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-    .login-form button, .direct-btn {
-      padding: 12px;
-      border: none;
-      border-radius: 6px;
-      background: #4a7fe3;
-      color: white;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    .login-form button:hover, .direct-btn:hover {
-      background: #365dcf;
-    }
-    .login-container p {
-      text-align: center;
-      margin-top: 10px;
-      font-size: 0.9rem;
-      color: #555;
-    }
+    .login-container { max-width:400px; margin:80px auto; background:white; padding:25px; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.1); }
+    .login-container h2 { text-align:center; color:#4a7fe3; margin-bottom:20px; }
+    .login-form { display:flex; flex-direction:column; gap:15px; }
+    .login-form input, .login-form select { padding:12px; border-radius:6px; border:1px solid #ccc; }
+    .login-form button, .direct-btn { padding:12px; border:none; border-radius:6px; background:#4a7fe3; color:white; cursor:pointer; }
+    .login-form button:hover, .direct-btn:hover { background:#365dcf; }
+    .login-container p { text-align:center; margin-top:10px; font-size:0.9rem; color:#555; }
   </style>
 </head>
 <body>
-
-  <header>
-    <div class="logo">NEARME</div>
-  </header>
+  <header><div class="logo">NEARME</div></header>
 
   <div class="login-container">
     <h2>Login</h2>
@@ -71,24 +33,51 @@
       <button type="submit">Login</button>
     </form>
 
-    <!-- Extra button to directly go to 1.html -->
     <button class="direct-btn" onclick="window.location.href='1.html'">Go to Services</button>
-
     <p>Don't have an account? <a href="register.html">Register</a></p>
   </div>
 
   <script>
-    document.getElementById("loginForm").addEventListener("submit", function(event) {
-      event.preventDefault();
-      let role = document.getElementById("role").value;
+    // Single place that handles login and redirection.
+    document.getElementById("loginForm").addEventListener("submit", function (e) {
+      e.preventDefault();
 
+      const role = document.getElementById("role").value;
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      // simple front-end validation (replace with real auth later)
+      if (!username || !password) {
+        alert("Please enter username and password.");
+        return;
+      }
+
+      // mark logged-in
+      localStorage.setItem("loggedIn", "true");
+      localStorage.setItem("role", role);
+      localStorage.setItem("username", username);
+
+      // if the login page was opened with ?redirect=<full_url>, go back there
+      // if the login page was opened with ?redirect=<full_url>, go back there
+const params = new URLSearchParams(window.location.search);
+const redirect = params.get("redirect");
+if (redirect) {
+  // always decode once (because we encoded before)
+  const dest = decodeURIComponent(redirect);
+  window.location.href = dest;
+  return;
+}
+
+
+
+
+      // default post-login landing
       if (role === "user") {
-        window.location.href = "ar.html"; // go to services
-      } else if (role === "worker") {
-        window.location.href = "worker-dashboard.html"; 
+        window.location.href = "ar.html"; // your user services page
+      } else {
+        window.location.href = "worker-dashboard.html";
       }
     });
   </script>
-
 </body>
 </html>
