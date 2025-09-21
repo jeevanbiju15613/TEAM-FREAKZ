@@ -53,7 +53,7 @@
       border: 1px solid #ccc;
       background: #f4f6fb;
     }
-    .save-btn, .register-btn, .service-btn {
+    .save-btn, .register-btn, .service-btn, .logout-btn {
       background: #4a7fe3;
       color: white;
       padding: 10px 20px;
@@ -62,7 +62,7 @@
       margin-top: 15px;
       cursor: pointer;
     }
-    .service-btn {
+    .service-btn, .logout-btn {
       display: block;
       margin: 20px auto;
       text-align: center;
@@ -145,6 +145,10 @@
   </div>
 
   <button class="service-btn" onclick="goToServices()">Go to Services</button>
+  <button class="logout-btn" onclick="window.location.href='1.html'">
+    <img src="user.png" alt="Login" style="width:16px; height:16px; vertical-align: middle;">
+    Logout
+  </button>
 
   <div class="booking-history">
     <h3>Booking History</h3>
@@ -206,7 +210,6 @@
 
   // Go to services page
   function goToServices(){
-    // Replace with your actual services page
     window.location.href = "ar.html";
   }
 </script>
