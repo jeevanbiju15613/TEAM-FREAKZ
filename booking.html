@@ -36,7 +36,8 @@
       <input type="date" id="date" name="date">
 
       <label for="time">Select Time</label>
-      <input type="time" id="time" name="time">
+      <!-- ⏰ Restrict to 07:00 - 21:00 -->
+      <input type="time" id="time" name="time" min="07:00" max="21:00">
 
       <button type="submit" class="book-btn">Confirm Booking</button>
 
@@ -113,6 +114,13 @@
         return;
       }
 
+      // ⏰ Time validation (07:00 - 21:00)
+      if (chosenTime < "07:00" || chosenTime > "21:00") {
+        alert("⏰ Please select a time between 7:00 AM and 9:00 PM.");
+        timeInput.value = ""; // reset invalid time
+        return;
+      }
+
       const loggedIn = localStorage.getItem("loggedIn") === "true";
 
       if (!loggedIn) {
@@ -120,7 +128,7 @@
         const bookingData = { worker: chosenWorker, date: chosenDate, time: chosenTime, serviceType: effectiveServiceType };
         localStorage.setItem("pendingBooking", JSON.stringify(bookingData));
 
-        // 🔹 FIXED: include current booking page URL so after login → return here
+        // include redirect param
         const loginUrl = "login.html?redirect=" + encodeURIComponent("booking.html");
         window.location.href = loginUrl;
         return;
