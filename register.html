@@ -48,9 +48,14 @@
       margin-top: 10px;
       font-size: 0.9rem;
       color: #555;
-    }
+    }                
     .hidden {
       display: none;
+    }
+    .password-hint {
+      font-size: 0.85rem;
+      color: #666;
+      margin-top: -10px;
     }
   </style>
 </head>
@@ -74,7 +79,9 @@
       <input type="text" id="name" placeholder="Full Name" required>
       <input type="email" id="email" placeholder="Email" required>
       <input type="text" id="username" placeholder="Username" required>
+      
       <input type="password" id="password" placeholder="Password" required>
+      <small class="password-hint">Password must be at least 8 characters long and include at least 1 number.</small>
       <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
 
       <!-- Worker-specific fields -->
@@ -111,6 +118,14 @@
 
       let password = document.getElementById("password").value;
       let confirmPassword = document.getElementById("confirmPassword").value;
+
+      // ✅ Regex: Minimum 8 characters, at least 1 number
+      let passwordPattern = /^(?=.*[0-9]).{8,}$/;
+
+      if (!passwordPattern.test(password)) {
+        alert("❌ Password must be at least 8 characters long and include at least 1 number.");
+        return;
+      }
 
       if (password !== confirmPassword) {
         alert("❌ Passwords do not match!");

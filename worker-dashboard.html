@@ -10,13 +10,11 @@
 
   <!-- Header -->
   <header>
-
     <h1 class="logo"><span style="color: red;">N</span>EAR<span style="color: red;">M</span>E</h1>
     <div class="nav-right">
       <span class="worker-name">Welcome, Rahul (Electrician)</span>
       <a href="worker-profile.html" class="nav-link">👤 My Profile</a>
-
-      <button class="logout-btn">Logout</button>
+      <button class="logout-btn" onclick="window.location.href='1.html'">Logout</button>
     </div>
   </header>
 
@@ -35,11 +33,23 @@
     </ul>
 
     <h3>Availability</h3>
-    <button class="available-btn">✅ Mark as Available</button>
-    <button class="unavailable-btn">❌ Mark as Unavailable</button>
+    <button class="available-btn" onclick="setAvailability('Available')">✅ Mark as Available</button>
+    <button class="unavailable-btn" onclick="setAvailability('Unavailable')">❌ Mark as Unavailable</button>
   </div>
+
+  <script>
+    function setAvailability(status) {
+      // Save status in localStorage
+      localStorage.setItem("workerAvailability", status);
+
+      // Show alert
+      if (status === "Available") {
+        alert("✅ You are now marked as Available.");
+      } else {
+        alert("❌ You are now marked as Unavailable.");
+      }
+    }
+  </script>
 
 </body>
 </html>
-
-
