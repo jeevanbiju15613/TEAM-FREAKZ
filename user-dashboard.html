@@ -86,6 +86,7 @@
     .center-btn {
       display: flex;
       justify-content: center;
+      gap: 15px;
       margin-top: 15px;
     }
 
@@ -97,6 +98,14 @@
 
     .center-btn button:hover {
       background: #2d8d46;
+    }
+
+    .logout-btn {
+      background: #ea4335 !important;
+    }
+
+    .logout-btn:hover {
+      background: #c5221f !important;
     }
   </style>
 </head>
@@ -128,9 +137,10 @@
 
     <div id="result"></div>
 
-    <!-- Go to Services Button -->
+    <!-- Buttons -->
     <div class="center-btn">
       <button onclick="window.location.href='ar.html'">Go to Services</button>
+      <button class="logout-btn" onclick="window.location.href='1.html'">Logout</button>
     </div>
   </div>
 
