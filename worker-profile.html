@@ -4,8 +4,31 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Worker Profile - NearMe</title>
-  <link rel="stylesheet" href="style.css">
   <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f0f2f5;
+    }
+    header {
+      background: #4a7fe3;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+    }
+    .nav-right button {
+      background: #e63946;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      cursor: pointer;
+    }
+    .nav-right button:hover {
+      background: #c92a36;
+    }
     .profile-container {
       max-width: 800px;
       margin: 60px auto;
@@ -27,7 +50,11 @@
       object-fit: cover;
       border: 3px solid #4a7fe3;
     }
-    .profile-header h2 {
+    .profile-header input[type="file"] {
+      display: block;
+      margin-top: 10px;
+    }
+    .profile-header h2, .profile-header p {
       margin: 0;
       color: #4a7fe3;
     }
@@ -40,11 +67,19 @@
       font-weight: bold;
       color: #333;
     }
-    .profile-details p {
+    .profile-details p, .profile-details input {
       margin: 4px 0 12px;
       color: #555;
+      font-size: 16px;
     }
-    .edit-btn {
+    .profile-details input {
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background: #f4f6fb;
+    }
+    .edit-btn, .save-btn, .back-btn {
       display: inline-block;
       padding: 10px 20px;
       background: #4a7fe3;
@@ -55,54 +90,126 @@
       margin-top: 20px;
       transition: background 0.3s;
     }
-    .edit-btn:hover {
+    .edit-btn:hover, .save-btn:hover, .back-btn:hover {
       background: #365dcf;
+    }
+    .back-btn {
+      margin-left: 10px;
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1 class="logo"><span style="color: red;">N</span>EAR<span style="color: red;">M</span>E</h1>
-    <div class="nav-right">
-      <button class="login-btn" onclick="window.location.href='login.html'">Logout</button>
-    </div>
-  </header>
+<header>
+  <h1 class="logo"><span style="color: red;">N</span>EAR<span style="color: red;">M</span>E</h1>
+  <div class="nav-right">
+    <button onclick="window.location.href='login.html'">Logout</button>
+  </div>
+</header>
 
-  <div class="profile-container">
-    <div class="profile-header">
+<div class="profile-container">
+  <div class="profile-header">
+    <div>
       <img src="worker-sample.jpg" alt="Profile Photo" id="profilePhoto">
-      <div>
-        <h2 id="workerName">Rahul Kumar</h2>
-        <p id="workerRole">Electrician</p>
-      </div>
+      <input type="file" accept="image/*" id="profilePicInput">
     </div>
-
-    <div class="profile-details">
-      <div>
-        <label>Phone:</label>
-        <p id="workerPhone">+91 9876543210</p>
-
-        <label>Address:</label>
-        <p id="workerAddress">Bangalore, Karnataka</p>
-      </div>
-      <div>
-        <label>Experience:</label>
-        <p id="workerExperience">5 Years</p>
-
-        <label>Skills:</label>
-        <p id="workerSkills">Wiring, Repair, Installations</p>
-      </div>
+    <div>
+      <h2 id="workerName">Rahul Kumar</h2>
+      <p id="workerRole">Electrician</p>
     </div>
-
-    <button class="edit-btn" onclick="editProfile()">Edit Profile</button>
   </div>
 
-  <script>
-    function editProfile() {
-      alert("🔧 Edit profile feature will be added when backend is ready!");
+  <div class="profile-details">
+    <div>
+      <label>Phone:</label>
+      <p id="workerPhone">+91 9876543210</p>
+
+      <label>Address:</label>
+      <p id="workerAddress">Bangalore, Karnataka</p>
+    </div>
+    <div>
+      <label>Experience:</label>
+      <p id="workerExperience">5 Years</p>
+
+      <label>Skills:</label>
+      <p id="workerSkills">Wiring, Repair, Installations</p>
+    </div>
+  </div>
+
+  <button class="edit-btn" id="editBtn">Edit Profile</button>
+  <button class="back-btn" onclick="window.location.href='worker-dashboard.html'">Back</button>
+</div>
+
+<script>
+  // Profile picture change
+  document.getElementById("profilePicInput").addEventListener("change", function(event){
+    const reader = new FileReader();
+    reader.onload = function(){
+      document.getElementById("profilePhoto").src = reader.result;
+      localStorage.setItem("workerPhoto", reader.result);
+    };
+    reader.readAsDataURL(event.target.files[0]);
+  });
+
+  // Load saved profile picture and data
+  window.onload = function() {
+    const savedPhoto = localStorage.getItem("workerPhoto");
+    if(savedPhoto){
+      document.getElementById("profilePhoto").src = savedPhoto;
     }
-  </script>
+    const savedData = JSON.parse(localStorage.getItem("workerData"));
+    if(savedData){
+      document.getElementById("workerName").textContent = savedData.name;
+      document.getElementById("workerRole").textContent = savedData.role;
+      document.getElementById("workerPhone").textContent = savedData.phone;
+      document.getElementById("workerAddress").textContent = savedData.address;
+      document.getElementById("workerExperience").textContent = savedData.experience;
+      document.getElementById("workerSkills").textContent = savedData.skills;
+    }
+  };
+
+  function editProfile() {
+    const fields = [
+      {id: "workerName", type: "text"},
+      {id: "workerRole", type: "text"},
+      {id: "workerPhone", type: "text"},
+      {id: "workerAddress", type: "text"},
+      {id: "workerExperience", type: "text"},
+      {id: "workerSkills", type: "text"}
+    ];
+
+    fields.forEach(field => {
+      const el = document.getElementById(field.id);
+      el.outerHTML = `<input type="${field.type}" id="${field.id}" value="${el.textContent}">`;
+    });
+
+    const editBtn = document.getElementById("editBtn");
+    editBtn.outerHTML = `<button class="save-btn" id="saveBtn">Save Profile</button>`;
+
+    document.getElementById("saveBtn").addEventListener("click", function(){
+      const workerData = {};
+      fields.forEach(field => {
+        const inputEl = document.getElementById(field.id);
+        inputEl.outerHTML = `<p id="${field.id}">${inputEl.value}</p>`;
+        workerData[field.id.replace("worker","").toLowerCase()] = inputEl.value;
+      });
+
+      // Format Name and Role
+      const nameEl = document.getElementById("workerName");
+      nameEl.outerHTML = `<h2 id="workerName">${nameEl.textContent}</h2>`;
+      const roleEl = document.getElementById("workerRole");
+      roleEl.outerHTML = `<p id="workerRole">${roleEl.textContent}</p>`;
+
+      document.getElementById("saveBtn").outerHTML = `<button class="edit-btn" id="editBtn">Edit Profile</button>`;
+      document.getElementById("editBtn").addEventListener("click", editProfile);
+
+      localStorage.setItem("workerData", JSON.stringify(workerData));
+      alert("Profile updated!");
+    });
+  }
+
+  document.getElementById("editBtn").addEventListener("click", editProfile);
+</script>
 
 </body>
 </html>

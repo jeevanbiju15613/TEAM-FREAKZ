@@ -112,13 +112,31 @@
       margin-bottom: 10px;
       border-radius: 6px;
     }
+    .logout-btn {
+      background: #e63946;
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .logout-btn:hover {
+      background: #c92a36;
+    }
+    #editBtn {
+      background: #2a9d8f;
+      margin-left: 10px;
+    }
   </style>
 </head>
 <body>
 
 <header>
   <h2>NEARME</h2>
-  <span class="notification-icon" onclick="toggleSidebar()">🔔</span>
+  <div style="display:flex; align-items:center; gap:15px;">
+    <span class="notification-icon" onclick="toggleSidebar()">🔔</span>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
 </header>
 
 <div class="profile-container">
@@ -130,18 +148,19 @@
 
   <div class="profile-info">
     <label>Name:</label>
-    <input type="text" id="userName">
+    <input type="text" id="userName" readonly>
 
     <label>Email:</label>
-    <input type="email" id="userEmail">
+    <input type="email" id="userEmail" readonly>
 
     <label>Phone:</label>
-    <input type="text" id="userPhone">
+    <input type="text" id="userPhone" readonly>
 
     <label>Address:</label>
-    <input type="text" id="userAddress">
+    <input type="text" id="userAddress" readonly>
 
-    <button class="register-btn" id="registerBtn"> Update</button>
+    <button class="register-btn" id="registerBtn">Update</button>
+    <button class="register-btn" id="editBtn">Edit Profile</button>
   </div>
 
   <button class="service-btn" onclick="goToServices()">Go to Services</button>
@@ -177,18 +196,6 @@
     reader.readAsDataURL(event.target.files[0]);
   }
 
-  // Save or Update user data
-  document.getElementById("registerBtn").addEventListener("click", function(){
-    const updatedData = {
-      name: document.getElementById("userName").value,
-      email: document.getElementById("userEmail").value,
-      phone: document.getElementById("userPhone").value,
-      address: document.getElementById("userAddress").value
-    };
-    localStorage.setItem("userData", JSON.stringify(updatedData));
-    alert("Profile saved!");
-  });
-
   // Load user data on page load
   window.onload = function() {
     const storedData = JSON.parse(localStorage.getItem("userData"));
@@ -206,9 +213,40 @@
 
   // Go to services page
   function goToServices(){
-    // Replace with your actual services page
     window.location.href = "ar.html";
   }
+
+  // Logout function
+  function logout() {
+    localStorage.removeItem("userData");
+    localStorage.removeItem("profilePic");
+    window.location.href = "1.html";
+  }
+
+  // Edit Profile: make selected fields editable
+  document.getElementById("editBtn").addEventListener("click", function() {
+    document.getElementById("userName").removeAttribute("readonly");
+    document.getElementById("userPhone").removeAttribute("readonly");
+    document.getElementById("userAddress").removeAttribute("readonly");
+    document.getElementById("userName").focus();
+  });
+
+  // Update Profile: save and make fields readonly again
+  document.getElementById("registerBtn").addEventListener("click", function(){
+    const updatedData = {
+      name: document.getElementById("userName").value,
+      email: document.getElementById("userEmail").value,
+      phone: document.getElementById("userPhone").value,
+      address: document.getElementById("userAddress").value
+    };
+    localStorage.setItem("userData", JSON.stringify(updatedData));
+    alert("Profile saved!");
+
+    // Make editable fields readonly again
+    document.getElementById("userName").setAttribute("readonly", true);
+    document.getElementById("userPhone").setAttribute("readonly", true);
+    document.getElementById("userAddress").setAttribute("readonly", true);
+  });
 </script>
 
 <footer style="text-align:center; margin:20px;">&copy; 2025 NearMe. All rights reserved.</footer>
