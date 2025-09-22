@@ -36,7 +36,24 @@
       </select>
 
       <label for="date">Select Date</label>
-      <input type="date" id="date" name="date">
+    <input type="date" id="date" name="date">
+<script>
+  const input = document.getElementById("date");
+  const today = new Date();
+
+  // Format today as YYYY-MM-DD
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, "0");
+  const dd = String(today.getDate()).padStart(2, "0");
+  const todayStr = `${yyyy}-${mm}-${dd}`;
+
+  // Set min as today
+  input.min = todayStr;
+
+  // Set max as last day of current year
+  input.max = `${yyyy}-12-31`;
+</script>
+
 
       <label for="time">Select Time</label>
       <!-- ⏰ Restrict to 07:00 - 21:00 -->
