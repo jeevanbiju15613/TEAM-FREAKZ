@@ -30,6 +30,9 @@
         <option>Electrician Rahul</option>
         <option>Plumber Suresh</option>
         <option>Cleaner Anita</option>
+        <option>Coolie Anita</option>
+        <option>Mechanic Anita</option>
+
       </select>
 
       <label for="date">Select Date</label>
@@ -59,7 +62,7 @@
     const confirmation = document.getElementById("confirmation");
 
     const urlParams = new URLSearchParams(window.location.search);
-    let serviceTypeFromUrl = urlParams.get("type");
+    let serviceTypeFromUrl = urlParams.get("service");
 
     function ensureOptionExists(selectEl, text) {
       for (let i = 0; i < selectEl.options.length; i++) {
