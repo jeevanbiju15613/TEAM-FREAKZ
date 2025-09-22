@@ -74,14 +74,14 @@
       text-decoration: overline;
     }
 
-    /* 🔹 Location + Profile + History Styling */
+    /* 🔹 Location + Login Styling */
     .nav-right {
       display: flex;
       align-items: center;
       gap: 12px;
     }
 
-    .login-btn, .location-btn, .history-btn, .Myprofile-btn {
+    .login-btn, .location-btn {
       background-color: #2b5bcf;
       color: white;
       padding: 8px 14px;
@@ -95,7 +95,7 @@
       transition: background 0.3s;
     }
 
-    .login-btn:hover, .location-btn:hover, .history-btn:hover, .Myprofile-btn:hover {
+    .login-btn:hover, .location-btn:hover {
       background-color: #1d3e91;
     }
 
@@ -131,15 +131,11 @@
       </button>
       <span id="location-status"></span>
 
-      <!-- My Profile Button -->
-      <button class="Myprofile-btn" onclick="window.location.href='user-dashboard.html'">
-        <img src="user.png" alt="Profile" style="width:16px; height:16px;">
+      <!-- Login Button -->
+      
+       <button class="Myprofile-btn" onclick="window.location.href='user-dashboard.html'">
+        <img src="user.png" alt="Login" style="width:16px; height:16px;">
         Myprofile
-      </button>
-
-      <!-- 🔹 New History Button -->
-      <button class="history-btn" onclick="window.location.href='uh.html'">
-        📜 History
       </button>
     </div>
   </header>
@@ -156,6 +152,7 @@
     <p style="text-align:center; color:black;">Choose the type of worker you need</p>
 
     <!-- Worker Grid -->
+    <!-- After Login Services Page -->
 <div class="grid">
   <div class="card" onclick="goToBooking('Cleaner')">
     <img src="cleaner.jpg" alt="Cleaner">
