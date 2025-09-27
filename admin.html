@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - NearMe</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6fa;
+      margin: 0;
+    }
+    header {
+      background: #2b5bcf;
+      color: white;
+      padding: 15px 20px;
+      text-align: center;
+    }
+    h2 {
+      text-align: center;
+      margin-top: 20px;
+      color: #2b5bcf;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 20px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    table th, table td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+    }
+    table th {
+      background: #2b5bcf;
+      color: white;
+    }
+    .btn {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      color: white;
+    }
+    .approve { background: #28a745; }
+    .reject { background: #dc3545; }
+    .update { background: #ffc107; color: black; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo-title">
+        <img src="Ellipse 4.png" alt="Worker Logo">
+        <div class="logo"><span style="color: red;">N</span>EAR<span style="color: red;">M</span>E</div>
+    </div>
+    <div>
+        ADMIN 
+
+    </div>
+  </header>
+
+  <div class="container">
+    <h2>Worker Verification</h2>
+    <table id="workerTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Skills</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Workers will load here -->
+      </tbody>
+    </table>
+
+    <h2>User Management</h2>
+    <table id="userTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Users will load here -->
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    // Dummy Data - replace later with backend/localStorage
+    let workers = [
+      { name: "John Doe", skills: "Plumber", status: "Pending" },
+      { name: "Ravi Kumar", skills: "Electrician", status: "Approved" }
+    ];
+
+    let users = [
+      { name: "Alice", email: "alice@example.com" },
+      { name: "Bob", email: "bob@example.com" }
+    ];
+
+    function loadTables() {
+      const workerTable = document.querySelector("#workerTable tbody");
+      workerTable.innerHTML = "";
+      workers.forEach((w, i) => {
+        workerTable.innerHTML += `
+          <tr>
+            <td>${w.name}</td>
+            <td>${w.skills}</td>
+            <td>${w.status}</td>
+            <td>
+              <button class="btn approve" onclick="approveWorker(${i})">Approve</button>
+              <button class="btn reject" onclick="rejectWorker(${i})">Reject</button>
+            </td>
+          </tr>
+        `;
+      });
+
+      const userTable = document.querySelector("#userTable tbody");
+      userTable.innerHTML = "";
+      users.forEach((u, i) => {
+        userTable.innerHTML += `
+          <tr>
+            <td>${u.name}</td>
+            <td>${u.email}</td>
+            <td>
+              <button class="btn update" onclick="updateUser(${i})">Update</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function approveWorker(i) {
+      workers[i].status = "Approved";
+      alert(workers[i].name + " has been approved.");
+      loadTables();
+    }
+
+    function rejectWorker(i) {
+      workers[i].status = "Rejected";
+      alert(workers[i].name + " has been rejected.");
+      loadTables();
+    }
+
+    function updateUser(i) {
+      let newEmail = prompt("Enter new email for " + users[i].name, users[i].email);
+      if (newEmail) {
+        users[i].email = newEmail;
+        alert("User updated successfully.");
+        loadTables();
+      }
+    }
+
+    // Load data on page load
+    window.onload = loadTables;
+  </script>
+</body>
+</html>
