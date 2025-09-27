@@ -50,10 +50,42 @@
       border-radius: 6px;
       cursor: pointer;
       color: white;
+      margin: 2px;
     }
     .approve { background: #28a745; }
     .reject { background: #dc3545; }
     .update { background: #ffc107; color: black; }
+    .view { background: #007bff; }
+
+    /* Modal styling */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      width: 400px;
+      max-width: 90%;
+      text-align: left;
+    }
+    .modal-content h3 {
+      margin-top: 0;
+      color: #2b5bcf;
+    }
+    .close-btn {
+      float: right;
+      cursor: pointer;
+      font-size: 18px;
+      color: red;
+    }
   </style>
 </head>
 <body>
@@ -64,12 +96,13 @@
         <div class="logo"><span style="color: red;">N</span>EAR<span style="color: red;">M</span>E</div>
     </div>
     <div>
-        ADMIN 
+ADMIN
 
     </div>
   </header>
 
   <div class="container">
+    <!-- Worker Verification -->
     <h2>Worker Verification</h2>
     <table id="workerTable">
       <thead>
@@ -80,11 +113,23 @@
           <th>Actions</th>
         </tr>
       </thead>
-      <tbody>
-        <!-- Workers will load here -->
-      </tbody>
+      <tbody></tbody>
     </table>
 
+    <!-- Approved Workers -->
+    <h2>Approved Workers</h2>
+    <table id="approvedTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Skills</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <!-- User Management -->
     <h2>User Management</h2>
     <table id="userTable">
       <thead>
@@ -94,25 +139,35 @@
           <th>Actions</th>
         </tr>
       </thead>
-      <tbody>
-        <!-- Users will load here -->
-      </tbody>
+      <tbody></tbody>
     </table>
   </div>
 
+  <!-- Worker Profile Modal -->
+  <div id="profileModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModal()">✖</span>
+      <h3>Worker Profile</h3>
+      <p id="profileDetails"></p>
+    </div>
+  </div>
+
   <script>
-    // Dummy Data - replace later with backend/localStorage
+    // Dummy Data
     let workers = [
-      { name: "John Doe", skills: "Plumber", status: "Pending" },
-      { name: "Ravi Kumar", skills: "Electrician", status: "Approved" }
+      { name: "John Doe", skills: "Plumber", status: "Pending", phone: "9876543210", experience: "5 years" },
+      { name: "Ravi Kumar", skills: "Electrician", status: "Pending", phone: "9123456789", experience: "3 years" }
     ];
 
+    let approvedWorkers = [];
+
     let users = [
-      { name: "Alice", email: "alice@example.com" },
-      { name: "Bob", email: "bob@example.com" }
+      { name: "Alice", email: "alice@example.com", password: "alice123" },
+      { name: "Bob", email: "bob@example.com", password: "bob456" }
     ];
 
     function loadTables() {
+      // Worker Table
       const workerTable = document.querySelector("#workerTable tbody");
       workerTable.innerHTML = "";
       workers.forEach((w, i) => {
@@ -122,6 +177,7 @@
             <td>${w.skills}</td>
             <td>${w.status}</td>
             <td>
+              <button class="btn view" onclick="viewProfile(${i})">View</button>
               <button class="btn approve" onclick="approveWorker(${i})">Approve</button>
               <button class="btn reject" onclick="rejectWorker(${i})">Reject</button>
             </td>
@@ -129,6 +185,20 @@
         `;
       });
 
+      // Approved Workers Table
+      const approvedTable = document.querySelector("#approvedTable tbody");
+      approvedTable.innerHTML = "";
+      approvedWorkers.forEach((w) => {
+        approvedTable.innerHTML += `
+          <tr>
+            <td>${w.name}</td>
+            <td>${w.skills}</td>
+            <td>${w.status}</td>
+          </tr>
+        `;
+      });
+
+      // User Table
       const userTable = document.querySelector("#userTable tbody");
       userTable.innerHTML = "";
       users.forEach((u, i) => {
@@ -137,7 +207,8 @@
             <td>${u.name}</td>
             <td>${u.email}</td>
             <td>
-              <button class="btn update" onclick="updateUser(${i})">Update</button>
+              <button class="btn update" onclick="updateUser(${i})">Update Email</button>
+              <button class="btn view" onclick="resetPassword(${i})">Reset Password</button>
             </td>
           </tr>
         `;
@@ -146,23 +217,50 @@
 
     function approveWorker(i) {
       workers[i].status = "Approved";
-      alert(workers[i].name + " has been approved.");
+      approvedWorkers.push(workers[i]);
+      workers.splice(i, 1); // remove from pending
+      alert("✅ " + approvedWorkers[approvedWorkers.length - 1].name + " approved!");
       loadTables();
     }
 
     function rejectWorker(i) {
       workers[i].status = "Rejected";
-      alert(workers[i].name + " has been rejected.");
+      alert("❌ " + workers[i].name + " rejected!");
+      workers.splice(i, 1);
       loadTables();
+    }
+
+    function viewProfile(i) {
+      let w = workers[i];
+      document.getElementById("profileDetails").innerHTML = `
+        <b>Name:</b> ${w.name}<br>
+        <b>Skills:</b> ${w.skills}<br>
+        <b>Phone:</b> ${w.phone}<br>
+        <b>Experience:</b> ${w.experience}<br>
+        <b>Status:</b> ${w.status}
+      `;
+      document.getElementById("profileModal").style.display = "flex";
+    }
+
+    function closeModal() {
+      document.getElementById("profileModal").style.display = "none";
     }
 
     function updateUser(i) {
       let newEmail = prompt("Enter new email for " + users[i].name, users[i].email);
       if (newEmail) {
         users[i].email = newEmail;
-        alert("User updated successfully.");
+        alert("✅ Email updated successfully.");
         loadTables();
       }
+    }
+
+    // Reset Password Request (Admin side)
+    function resetPassword(i) {
+      let code = Math.floor(100000 + Math.random() * 900000); // 6-digit code
+      localStorage.setItem("reset_" + users[i].email, code); // store with key
+      alert("📧 Reset code sent to " + users[i].email + 
+            " (Simulated: Code = " + code + ")");
     }
 
     // Load data on page load

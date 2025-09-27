@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Reset Password - NearMe</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f6fa; }
+    .reset-box {
+      max-width: 400px;
+      margin: 80px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    h2 { color: #2b5bcf; text-align: center; }
+    input, button {
+      width: 100%; padding: 10px; margin: 8px 0;
+      border: 1px solid #ccc; border-radius: 6px;
+    }
+    button {
+      background: #2b5bcf; color: white; font-weight: bold;
+      cursor: pointer; border: none;
+    }
+    button:hover { background: #1d3e91; }
+  </style>
+</head>
+<body>
+  <div class="reset-box">
+    <h2>Reset Password</h2>
+    <input type="email" id="email" placeholder="Enter your email" required>
+    <input type="text" id="code" placeholder="Enter reset code" required>
+    <input type="password" id="newPass" placeholder="Enter new password" required>
+    <button onclick="resetPassword()">Submit</button>
+  </div>
+
+  <script>
+    function resetPassword() {
+      let email = document.getElementById("email").value;
+      let code = document.getElementById("code").value;
+      let newPass = document.getElementById("newPass").value;
+
+      let storedCode = localStorage.getItem("reset_" + email);
+
+      if (!storedCode) {
+        alert("❌ No reset request found for this email.");
+        return;
+      }
+
+      if (storedCode === code) {
+        // Update password in localStorage users list
+        let users = JSON.parse(localStorage.getItem("users")) || [];
+        let user = users.find(u => u.email === email);
+        if (user) {
+          user.password = newPass;
+          localStorage.setItem("users", JSON.stringify(users));
+          alert("✅ Password reset successfully!");
+          localStorage.removeItem("reset_" + email); // clear code
+          window.location.href = "login.html";
+        } else {
+          alert("❌ User not found.");
+        }
+      } else {
+        alert("❌ Invalid code.");
+      }
+    }
+  </script>
+</body>
+</html>
