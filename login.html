@@ -10,21 +10,16 @@
     .login-container h2 { text-align:center; color:#4a7fe3; margin-bottom:20px; }
     .login-form { display:flex; flex-direction:column; gap:15px; }
     .login-form input, .login-form select { padding:12px; border-radius:6px; border:1px solid #ccc; }
-    .login-form button, .direct-btn { padding:12px; border:none; border-radius:6px; background:#4a7fe3; color:white; cursor:pointer; transition: background 0.3s; }
+    .login-form button, .direct-btn { padding:12px; border:none; border-radius:6px; background:#4a7fe3; color:white; cursor:pointer; }
     .login-form button:hover, .direct-btn:hover { background:#365dcf; }
     .login-container p { text-align:center; margin-top:10px; font-size:0.9rem; color:#555; }
-    /* Added style for loading state */
-    .login-form button:disabled { background: #999; cursor: not-allowed; }
   </style>
 </head>
 <body>
-  <header>
-      <div class="logo-title">
-          <img src="Ellipse 4.png" alt="Worker Logo">
-          <div class="logo"><span style="color: red;">N</span>EAR<span style="color: red;">M</span>E</div>
-      </div>
-  </header>
-    
+  <div class="logo-title">
+        <img src="Ellipse 4.png" alt="Worker Logo">
+        <div class="logo"><span style="color: red;">N</span>EAR<span style="color: red;">M</span>E</div>
+    </div>
   <div class="login-container">
     <h2>Login</h2>
     <form class="login-form" id="loginForm">
@@ -37,87 +32,54 @@
       <input type="text" id="username" placeholder="Username" required>
       <input type="password" id="password" placeholder="Password" required>
 
-      <button type="submit" id="loginButton">Login</button>
+      <button type="submit">Login</button>
     </form>
 
     <button class="direct-btn" onclick="window.location.href='1.html'">Go to Services</button>
     <p>Don't have an account? <a href="register.html">Register</a></p>
   </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
   <script>
-    $(document).ready(function() {
-        const $loginForm = $("#loginForm");
-        const $loginButton = $("#loginButton");
-        const $roleSelect = $("#role");
-        const $usernameInput = $("#username");
-        const $passwordInput = $("#password");
+    // Single place that handles login and redirection.
+    document.getElementById("loginForm").addEventListener("submit", function (e) {
+      e.preventDefault();
 
-        // Single place that handles login and redirection using AJAX simulation
-        $loginForm.on("submit", function (e) {
-            e.preventDefault();
+      const role = document.getElementById("role").value;
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
 
-            const role = $roleSelect.val();
-            const username = $usernameInput.val().trim();
-            const password = $passwordInput.val().trim();
-            const params = new URLSearchParams(window.location.search);
-            const redirect = params.get("redirect");
-            let destinationURL = "";
-            
-            // Simple validation 
-            if (!username || !password) {
-                alert("Please enter username and password.");
-                return;
-            }
+      // simple front-end validation (replace with real auth later)
+      if (!username || !password) {
+        alert("Please enter username and password.");
+        return;
+      }
 
-            // **Professional AJAX Simulation**
-            $loginButton.prop('disabled', true).text('Authenticating...');
+      // mark logged-in
+      localStorage.setItem("loggedIn", "true");
+      localStorage.setItem("role", role);
+      localStorage.setItem("username", username);
 
-            $.ajax({
-                url: '/api/login', // Placeholder for actual API endpoint
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ role: role, username: username, password: password }),
-                
-                // Mock success handler since no backend exists
-                success: function(response) {
-                    // Simulate server delay for a professional feel
-                    setTimeout(function() {
-                        // 1. Mark logged-in and store user data in **localStorage**
-                        localStorage.setItem("loggedIn", "true");
-                        localStorage.setItem("role", role);
-                        localStorage.setItem("username", username);
-                        
-                        // 2. Determine redirection URL
-                        if (redirect) {
-                            // If a redirect parameter exists, use it
-                            destinationURL = decodeURIComponent(redirect);
-                        } else if (role === "user") {
-                            // Default user landing page
-                            destinationURL = "user-dashboard.html"; 
-                        } else {
-                            // Default worker landing page
-                            destinationURL = "worker-dashboard.html";
-                        }
-                        
-                        // 3. Redirect
-                        alert(`✅ Login successful as ${role}. Redirecting...`);
-                        window.location.href = destinationURL;
-                    }, 1000); // 1 second delay
-                },
-                
-                // Mock error handler
-                error: function(xhr, status, error) {
-                    setTimeout(function() {
-                        alert("❌ Login failed (Simulated). Invalid username or password.");
-                        $loginButton.prop('disabled', false).text('Login');
-                    }, 1000);
-                }
-            });
-            // End of AJAX Simulation
-        });
-    });
+      // if the login page was opened with ?redirect=<full_url>, go back there
+      // if the login page was opened with ?redirect=<full_url>, go back there
+const params = new URLSearchParams(window.location.search);
+const redirect = params.get("redirect");
+if (redirect) {
+  // always decode once (because we encoded before)
+  const dest = decodeURIComponent(redirect);
+  window.location.href = dest;
+  return;
+}
+
+
+
+
+      // default post-login landing
+      if (role === "user") {
+        window.location.href = "ar.html"; // your user services page
+      } else {
+        window.location.href = "worker-dashboard.html";
+      }
+    });
   </script>
 </body>
 </html>
