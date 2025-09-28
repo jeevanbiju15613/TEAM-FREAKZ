@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,6 +19,10 @@
       justify-content: space-between;
       align-items: center;
       padding: 10px 20px;
+    }
+    .logo-title {
+      display: flex;
+      align-items: center;
     }
     .profile-container {
       max-width: 800px;
@@ -77,11 +82,27 @@
       border-radius: 6px;
       margin-bottom: 10px;
       border-left: 4px solid #4a7fe3;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    /* Notification sidebar */
+    .booking-item.confirmed { border-left-color: #4CAF50; }
+    .booking-item.canceled { border-left-color: #e63946; }
     .notification-icon {
       cursor: pointer;
       font-size: 20px;
+      position: relative;
+    }
+    .notification-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: red;
+      color: white;
+      font-size: 10px;
+      padding: 2px 5px;
+      border-radius: 50%;
+      display: none;
     }
     .sidebar {
       position: fixed;
@@ -94,10 +115,9 @@
       transition: right 0.3s ease-in-out;
       padding: 20px;
       z-index: 1000;
+      overflow-y: auto;
     }
-    .sidebar.open {
-      right: 0;
-    }
+    .sidebar.open { right: 0; }
     .close-btn {
       background: none;
       border: none;
@@ -121,24 +141,22 @@
       border-radius: 6px;
       cursor: pointer;
     }
-    .logout-btn:hover {
-      background: #c92a36;
-    }
-    #editBtn {
-      background: #2a9d8f;
-      margin-left: 10px;
-    }
+    .logout-btn:hover { background: #c92a36; }
+    #editBtn { background: #2a9d8f; margin-left: 10px; }
   </style>
 </head>
 <body>
 
 <header>
- <div class="logo-title">
-      <img src="Ellipse 4.png" alt="Worker Logo" width="90px">
-      <div class="logo"><span style="color: red;">N</span>EAR<span style="color: red;">M</span>E</div>
+  <div class="logo-title">
+    <img src="Ellipse 4.png" alt="Worker Logo" width="90px" onerror="this.onerror=null; this.src='placeholder.png'">       
+    <div class="logo"><span style="color: red;">N</span>EAR<span style="color: red;">M</span>E</div>
   </div>
   <div style="display:flex; align-items:center; gap:15px;">
-    <span class="notification-icon" onclick="toggleSidebar()">🔔</span>
+    <span class="notification-icon" onclick="toggleSidebar()">
+      🔔
+      <span class="notification-badge" id="notificationBadge"></span>
+    </span>
     <button class="logout-btn" onclick="logout()">Logout</button>
   </div>
 </header>
@@ -146,7 +164,7 @@
 <div class="profile-container">
   <h2>User Profile</h2>
   <div class="profile-header">
-    <img src="default-user.jpg" alt="User Picture" class="profile-pic" id="profilePic">
+    <img src="default-user.jpg" alt="User Picture" class="profile-pic" id="profilePic" onerror="this.onerror=null; this.src='placeholder.png'">
     <input type="file" accept="image/*" onchange="previewImage(event)">
   </div>
 
@@ -171,27 +189,28 @@
 
   <div class="booking-history">
     <h3>Booking History</h3>
-    <div class="booking-item">✅ Electrician booked for 16 Sept 2025, 10:00 AM</div>
-    <div class="booking-item">❌ Cleaner booking canceled (12 Sept 2025)</div>
+    <div id="historyList"></div>
   </div>
 </div>
 
-<!-- Notification Sidebar 
 <div class="sidebar" id="notificationSidebar">
   <button class="close-btn" onclick="toggleSidebar()">×</button>
   <h3>Notifications</h3>
-  <div class="notification-item">Your booking is confirmed.</div>
-  <div class="notification-item">Plumber is on the way!</div>
-</div>-->
+  <div id="notificationList"></div>
+</div>
+
+<footer style="text-align:center; margin:20px;">&copy; 2025 NearMe. All rights reserved.</footer>
 
 <script>
-  // Sidebar toggle
+  const BOOKING_HISTORY_KEY = 'userBookingHistory';
+  const NOTIFICATION_KEY = 'userNotifications';
+
   function toggleSidebar() {
     document.getElementById('notificationSidebar').classList.toggle('open');
   }
 
-  // Image preview and save
   function previewImage(event) {
+    if (event.target.files.length === 0) return;
     const reader = new FileReader();
     reader.onload = function(){
       document.getElementById('profilePic').src = reader.result;
@@ -200,7 +219,81 @@
     reader.readAsDataURL(event.target.files[0]);
   }
 
-  // Load user data on page load
+  function goToServices(){
+    window.location.href = "ar.html";
+  }
+
+  function logout() {
+    localStorage.removeItem("loggedIn");
+    localStorage.removeItem("username");
+    localStorage.removeItem("userData");
+    localStorage.removeItem("profilePic");
+    window.location.href = "1.html";
+  }
+
+  function loadBookingHistory() {
+    const historyList = document.getElementById("historyList");
+    historyList.innerHTML = '';
+    let history = [];
+    try {
+      history = JSON.parse(localStorage.getItem(BOOKING_HISTORY_KEY)) || [];
+    } catch (e) {
+      console.error("Error loading booking history:", e);
+      history = [];
+    }
+    if (history.length === 0) {
+      historyList.innerHTML = '<div class="booking-item" style="border-left-color: #ccc;">No recent bookings found.</div>';
+      return;
+    }
+    history.reverse().forEach(booking => {
+      const statusIcon = booking.status === 'confirmed' ? '✅' : '❌';
+      const statusClass = booking.status === 'confirmed' ? 'confirmed' : 'canceled';
+      let dateStr = 'Unknown Date';
+      let timeStr = 'Unknown Time';
+      try {
+        const dateOptions = { year: 'numeric', month: 'short', day: 'numeric' };
+        const timeOptions = { hour: '2-digit', minute: '2-digit' };
+        dateStr = new Date(booking.date + 'T' + booking.time).toLocaleDateString('en-US', dateOptions);
+        timeStr = new Date('2000/01/01 ' + booking.time).toLocaleTimeString('en-US', timeOptions);
+      } catch (e) {}
+      const item = document.createElement("div");
+      item.className = `booking-item ${statusClass}`;
+      item.innerHTML = `
+        <span>
+          <strong>${statusIcon} ${booking.worker} (${booking.service})</strong><br>
+          <small>Scheduled for ${dateStr}, ${timeStr}</small>
+        </span>
+      `;
+      historyList.appendChild(item);
+    });
+  }
+
+  function loadNotifications() {
+    const notificationList = document.getElementById("notificationList");
+    const badge = document.getElementById("notificationBadge");
+    notificationList.innerHTML = '';
+    let notifications = [];
+    try {
+      notifications = JSON.parse(localStorage.getItem(NOTIFICATION_KEY)) || [];
+    } catch (e) {
+      console.error("Error loading notifications:", e);
+      notifications = [];
+    }
+    if (notifications.length === 0) {
+      notificationList.innerHTML = '<div class="notification-item" style="color:#666;">No new notifications.</div>';
+      badge.style.display = 'none';
+      return;
+    }
+    notifications.reverse().forEach(note => {
+      const item = document.createElement("div");
+      item.className = "notification-item";
+      item.innerText = note.message || note;
+      notificationList.appendChild(item);
+    });
+    badge.innerText = notifications.length;
+    badge.style.display = 'inline-block';
+  }
+
   window.onload = function() {
     const storedData = JSON.parse(localStorage.getItem("userData"));
     const storedPic = localStorage.getItem("profilePic");
@@ -213,21 +306,10 @@
     if(storedPic){
       document.getElementById("profilePic").src = storedPic;
     }
+    loadBookingHistory();
+    loadNotifications();
   };
 
-  // Go to services page
-  function goToServices(){
-    window.location.href = "ar.html";
-  }
-
-  // Logout function
-  function logout() {
-    localStorage.removeItem("userData");
-    localStorage.removeItem("profilePic");
-    window.location.href = "1.html";
-  }
-
-  // Edit Profile: make selected fields editable
   document.getElementById("editBtn").addEventListener("click", function() {
     document.getElementById("userName").removeAttribute("readonly");
     document.getElementById("userPhone").removeAttribute("readonly");
@@ -235,25 +317,21 @@
     document.getElementById("userName").focus();
   });
 
-  // Update Profile: save and make fields readonly again
   document.getElementById("registerBtn").addEventListener("click", function(){
+    const existingData = JSON.parse(localStorage.getItem("userData")) || {};
     const updatedData = {
       name: document.getElementById("userName").value,
-      email: document.getElementById("userEmail").value,
+      email: document.getElementById("userEmail").value || existingData.email || "", 
       phone: document.getElementById("userPhone").value,
       address: document.getElementById("userAddress").value
     };
     localStorage.setItem("userData", JSON.stringify(updatedData));
     alert("Profile saved!");
-
-    // Make editable fields readonly again
     document.getElementById("userName").setAttribute("readonly", true);
     document.getElementById("userPhone").setAttribute("readonly", true);
     document.getElementById("userAddress").setAttribute("readonly", true);
   });
 </script>
-
-<footer style="text-align:center; margin:20px;">&copy; 2025 NearMe. All rights reserved.</footer>
-
 </body>
 </html>
+```

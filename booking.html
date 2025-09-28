@@ -1,171 +1,194 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Book a Worker - NearMe</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Book a Worker - NearMe</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body class="booking-page">
 
-  <!-- Header -->
-  <header>
-   <div class="logo-title">
-        <img src="Ellipse 4.png" alt="Worker Logo">
-        <div class="logo"><span style="color: red;">N</span>EAR<span style="color: red;">M</span>E</div>
-    </div>
-    <div class="nav-right">
-      <button class="login-btn" onclick="window.location.href='login.html'">Login</button>
-    </div>
-  </header>
+    <header>
+   <div class="logo-title">
+        <img src="Ellipse 4.png" alt="Worker Logo">
+        <div class="logo"><span style="color: red;">N</span>EAR<span style="color: red;">M</span>E</div>
+    </div>
+    <div class="nav-right">
+      <button class="login-btn" id="authBtn" onclick="window.location.href='login.html'">Login</button>
+    </div>
+  </header>
 
-  <!-- Notification Bar (hidden by default) -->
-  <div class="notification-bar" style="display:none;">
-    ✅ Your booking with <b id="workerName"></b> is confirmed!
-  </div>
+    <div class="notification-bar" style="display:none;">
+    ✅ Your booking with <b id="workerName"></b> is confirmed!
+  </div>
 
-  <!-- Booking Form -->
-  <div class="container">
-    <h2>🔧 Book a Worker</h2>
-    <form class="booking-form" id="bookingForm">
-      <label for="worker">Choose Worker</label>
-      <select id="worker" name="worker">
-        <option>Electrician Rahul</option>
-        <option>Plumber Suresh</option>
-        <option>Cleaner Anita</option>
-        <option>Coolie Anita</option>
-        <option>Mechanic Anita</option>
+    <div class="container">
+    <h2>🔧 Book a Worker</h2>
+    <form class="booking-form" id="bookingForm">
+      <label for="worker">Choose Worker</label>
+      <select id="worker" name="worker">
+        <option>Electrician Rahul</option>
+        <option>Plumber Suresh</option>
+        <option>Cleaner Anita</option>
+        <option>Coolie Dev</option>
+        <option>Mechanic Javed</option>
+      </select>
 
-      </select>
+      <label for="date">Select Date</label>
+      <input type="date" id="date" name="date">
 
-      <label for="date">Select Date</label>
-    <input type="date" id="date" name="date">
-<script>
-  const input = document.getElementById("date");
-  const today = new Date();
+      <label for="time">Select Time</label>
+      <input type="time" id="time" name="time" min="07:00" max="21:00">
 
-  // Format today as YYYY-MM-DD
-  const yyyy = today.getFullYear();
-  const mm = String(today.getMonth() + 1).padStart(2, "0");
-  const dd = String(today.getDate()).padStart(2, "0");
-  const todayStr = `${yyyy}-${mm}-${dd}`;
+      <button type="submit" class="book-btn">Confirm Booking</button>
 
-  // Set min as today
-  input.min = todayStr;
+      <p id="confirmation" style="display:none; color:green; margin-top:15px; font-weight:bold;">
+        ✅ Booking Confirmed! Redirecting to services...
+      </p>
+      <a href="ar.html" class="back-btn">⬅ Back to Services</a>
+    </form>
+  </div>
 
-  // Set max as last day of current year
-  input.max = `${yyyy}-12-31`;
-</script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
+  <script>
+    $(document).ready(function () {
+      // --- Setup and Header Update ---
+      const LOGGED_IN = localStorage.getItem("loggedIn") === "true";
+      const username = localStorage.getItem("username") || "Myprofile";
+      const urlParams = new URLSearchParams(window.location.search);
+      let serviceType = urlParams.get("service");
 
-      <label for="time">Select Time</label>
-      <!-- ⏰ Restrict to 07:00 - 21:00 -->
-      <input type="time" id="time" name="time" min="07:00" max="21:00">
-
-      <button type="submit" class="book-btn">Confirm Booking</button>
-
-      <p id="confirmation" style="display:none; color:green; margin-top:15px; font-weight:bold;">
-        ✅ Booking Confirmed! You can check notifications for updates.
-      </p>
-      <a href="ar.html" class="back-btn">⬅ Back to Services</a>
-    </form>
-  </div>
-
-<script>
-  (function () {
-    const form = document.getElementById("bookingForm");
-    const workerSelect = document.getElementById("worker");
-    const dateInput = document.getElementById("date");
-    const timeInput = document.getElementById("time");
-    const workerName = document.getElementById("workerName");
-    const notificationBar = document.querySelector(".notification-bar");
-    const confirmation = document.getElementById("confirmation");
-
-    const urlParams = new URLSearchParams(window.location.search);
-    let serviceTypeFromUrl = urlParams.get("service");
-
-    function ensureOptionExists(selectEl, text) {
-      for (let i = 0; i < selectEl.options.length; i++) {
-        if (selectEl.options[i].text === text) return;
-      }
-      const opt = document.createElement("option");
-      opt.text = text;
-      selectEl.add(opt, 0);
-    }
-
-    // 🔹 Restore pending booking (if exists)
-    let pendingBooking = null;
-    try {
-      pendingBooking = JSON.parse(localStorage.getItem("pendingBooking"));
-    } catch (e) { pendingBooking = null; }
-
-    const effectiveServiceType = serviceTypeFromUrl || (pendingBooking && pendingBooking.serviceType) || null;
-
-    if (effectiveServiceType) {
-      const lower = effectiveServiceType.toLowerCase();
-      const opts = Array.from(workerSelect.options);
-      workerSelect.innerHTML = "";
-      opts.forEach(o => {
-        if (o.text.toLowerCase().includes(lower)) {
-          workerSelect.add(o);
-        }
-      });
-      if (workerSelect.options.length === 0 && pendingBooking && pendingBooking.worker) {
-        ensureOptionExists(workerSelect, pendingBooking.worker);
-      }
-    }
-
-    if (pendingBooking) {
-      if (pendingBooking.worker) {
-        ensureOptionExists(workerSelect, pendingBooking.worker);
-        workerSelect.value = pendingBooking.worker;
-      }
-      if (pendingBooking.date) dateInput.value = pendingBooking.date;
-      if (pendingBooking.time) timeInput.value = pendingBooking.time;
-    }
-
-    // 🔹 Handle booking form submit
-    form.addEventListener("submit", function (ev) {
-      ev.preventDefault();
-
-      const chosenWorker = workerSelect.value;
-      const chosenDate = dateInput.value;
-      const chosenTime = timeInput.value;
-
-      if (!chosenWorker || !chosenDate || !chosenTime) {
-        alert("Please fill all fields.");
-        return;
+      // Update Header Button based on login status
+      if (LOGGED_IN) {
+          $("#authBtn").text(username).css("background-color", "#4CAF50").off("click").on("click", function() {
+              window.location.href='user-dashboard.html';
+          });
+      } else {
+          $("#authBtn").text("Login").css("background-color", "#2b5bcf").off("click").on("click", function() {
+              window.location.href='login.html';
+          });
       }
 
-      // ⏰ Time validation (07:00 - 21:00)
-      if (chosenTime < "07:00" || chosenTime > "21:00") {
-        alert("⏰ Please select a time between 7:00 AM and 9:00 PM.");
-        timeInput.value = ""; // reset invalid time
-        return;
+      // ⏳ Date restrictions (Keep original logic)
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, "0");
+      const dd = String(today.getDate()).padStart(2, "0");
+      const todayStr = `${yyyy}-${mm}-${dd}`;
+      $("#date").attr("min", todayStr).attr("max", `${yyyy}-12-31`);
+
+      // 🔹 Filter workers based on service type from URL (Keep original logic)
+      if (serviceType) {
+        const typeLower = serviceType.toLowerCase();
+        $("#worker option").each(function () {
+          if (!$(this).text().toLowerCase().includes(typeLower)) {
+            $(this).remove();
+          }
+        });
+      }
+
+      // 🚀 RESTORE AND AUTO-CONFIRM LOGIC
+      let pendingBooking = null;
+      try { pendingBooking = JSON.parse(localStorage.getItem("pendingBooking")); } catch (e) {}
+
+      // **Core change:** Only auto-confirm if user returned from login with the 'continue' flag
+      if (pendingBooking && LOGGED_IN && urlParams.get("continue") === "booking") {
+          // Pre-fill and auto-confirm
+          $("#worker").val(pendingBooking.worker);
+          $("#date").val(pendingBooking.date);
+          $("#time").val(pendingBooking.time);
+          autoConfirmBooking(pendingBooking);
+          return; 
+      }
+
+      // 🔹 Form submission (Core Logic)
+      $("#bookingForm").on("submit", function (e) {
+        e.preventDefault();
+
+        const worker = $("#worker").val();
+        const date = $("#date").val();
+        const time = $("#time").val();
+
+        if (!worker || !date || !time) {
+          alert("⚠️ Please fill all fields.");
+          return;
+        }
+        if (time < "07:00" || time > "21:00") {
+          alert("⏰ Please select a time between 7:00 AM and 9:00 PM.");
+          $("#time").val("");
+          return;
+        }
+
+        const bookingData = { worker, date, time, serviceType: serviceType || 'General' };
+
+        if (!LOGGED_IN) {
+          // **Path 1: NOT LOGGED IN (Coming from 1.html or similar) -> Redirect to login**
+          localStorage.setItem("pendingBooking", JSON.stringify(bookingData));
+          alert("🔒 Please log in to confirm your booking. Redirecting now...");
+          window.location.href = "login.html?redirect=booking.html";
+          return;
+        }
+
+        // **Path 2: ALREADY LOGGED IN (Coming from ar.html) -> Confirm immediately**
+        autoConfirmBooking(bookingData);
+      });
+
+      // 🔹 Function to confirm booking (with AJAX simulation)
+      function autoConfirmBooking(data) {
+          const $button = $(".book-btn");
+        $.ajax({
+          url: "dummyBookingAPI", // Placeholder
+          method: "POST",
+          data: data,
+          timeout: 100, 
+          beforeSend: function () {
+            $button.text("⏳ Processing...").prop("disabled", true);
+          },
+          complete: function () {
+            // Confirmation UI Update
+            $("#workerName").text(data.worker);
+            $(".notification-bar").fadeIn();
+            $("#confirmation").fadeIn();
+            localStorage.removeItem("pendingBooking");
+
+             $button.text("Booking Confirmed!").css("background-color", "#4CAF50").prop("disabled", true);
+             
+             // **CRITICAL: Save booking to history in localStorage**
+             saveBookingToHistory(data);
+
+            // ⏩ Redirect to services page with success flag
+            setTimeout(() => {
+              window.location.href = "ar.html?booking=success";
+            }, 2000);
+          }
+        });
+      }
+      
+      // Function to save booking data to localStorage history
+      function saveBookingToHistory(booking) {
+          const historyKey = 'userBookingHistory';
+          let history = [];
+          try {
+              history = JSON.parse(localStorage.getItem(historyKey)) || [];
+          } catch (e) {
+              console.error("Error parsing booking history:", e);
+          }
+          
+          const newBooking = {
+              worker: booking.worker,
+              service: booking.serviceType,
+              date: booking.date,
+              time: booking.time,
+              status: "confirmed",
+              timestamp: new Date().toISOString()
+          };
+          
+          history.unshift(newBooking); // Add to the start
+          localStorage.setItem(historyKey, JSON.stringify(history));
       }
-
-      const loggedIn = localStorage.getItem("loggedIn") === "true";
-
-      if (!loggedIn) {
-        // save booking and redirect to login
-        const bookingData = { worker: chosenWorker, date: chosenDate, time: chosenTime, serviceType: effectiveServiceType };
-        localStorage.setItem("pendingBooking", JSON.stringify(bookingData));
-
-        // include redirect param
-        const loginUrl = "login.html?redirect=" + encodeURIComponent("booking.html");
-        window.location.href = loginUrl;
-        return;
-      }
-
-      // ✅ Already logged in → confirm booking
-      workerName.textContent = chosenWorker;
-      notificationBar.style.display = "block";
-      confirmation.style.display = "block";
-
-      localStorage.removeItem("pendingBooking");
-    });
-  })();
-</script>
+    });
+  </script>
 
 </body>
 </html>
