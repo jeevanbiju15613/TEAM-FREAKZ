@@ -1,154 +1,295 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Near Me - Services</title>
-  <link rel="stylesheet" href="style.css">
-  <style>
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 25px;
-      margin-top: 30px;
-      padding: 0 20px;
-    }
-    .card {
-      background: rgba(255, 255, 255, 0.85);
-      border-radius: 12px;
-      text-align: center;
-      padding: 15px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      cursor: pointer;
-      transition: all 0.3s ease-in-out;
-    }
-    .card img {
-      width: 100%;
-      height: 150px;
-      object-fit: cover;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      transition: transform 0.3s ease-in-out;
-    }
-    .services-heading {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      margin-bottom: 10px;
-    }
-    .services-heading img {
-      width: 40px;
-      height: 40px;
-      object-fit: contain;
-    }
-    .services-heading h2 {
-      color: #2b5bcf;
-      font-size: 26px;
-      margin: 0;
-    }
-    .card p {
-      margin: 0;
-      font-size: 16px;
-      color: #333;
-      font-weight: 500;
-    }
-    .card:hover {
-      background: #fff;
-      transform: translateY(-8px);
-      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-    }
-    .card:hover img {
-      transform: scale(1.05);
-    }
-    .nav-right { display: flex; align-items: center; gap: 12px; }
-    .login-btn, .location-btn {
-      background-color: #2b5bcf;
-      color: white;
-      padding: 8px 14px;
-      font-size: 14px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: background 0.3s;
-    }
-    .login-btn:hover, .location-btn:hover { background-color: #1d3e91; }
-    #location-status { font-size: 13px; color: #333; margin-left: 8px; }
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 20px;
-      background: rgba(255, 255, 255, 0.85);
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Near Me - Services</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Existing CSS for grid, cards, and header */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+            padding: 0 20px;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 12px;
+            text-align: center;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+        }
+        .card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: transform 0.3s ease-in-out;
+        }
+        .services-heading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+        .services-heading img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+        }
+        .services-heading h2 {
+            color: #2b5bcf;
+            font-size: 26px;
+            margin: 0;
+        }
+        .card p {
+            margin: 0;
+            font-size: 16px;
+            color: #333;
+            font-weight: 500;
+        }
+        .card:hover {
+            background: #fff;
+            transform: translateY(-8px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+        .card:hover img {
+            transform: scale(1.05);
+        }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .login-btn, .location-btn {
+            background-color: #2b5bcf;
+            color: white;
+            padding: 8px 14px;
+            font-size: 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.3s;
+        }
+        .login-btn:hover, .location-btn:hover { background-color: #1d3e91; }
+        #location-status { font-size: 13px; color: #333; margin-left: 8px; }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.85);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+
+        /* New CSS for Slideshows */
+        .slideshow-container {
+            max-width: 900px; /* Kept original Max Width */
+            margin: 20px auto;
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        /* Specific CSS to make the top container shorter in height */
+        #top-ads-slideshow {
+            /* Max width kept at 900px to match .slideshow-container, no change in width */
+            margin-top: 10px;
+        }
+        /* Adjusted height for the ad slides specifically in the top slideshow */
+        #top-ads-slideshow .ad-slide {
+            height: 150px; /* Reduced height for the top ads */
+        }
+        .ad-slide {
+            display: none; /* Hide all slides by default */
+            width: 100%;
+            height: 200px; /* Default height for the bottom ads */
+            object-fit: cover;
+            animation: fadeIn 1.5s;
+        }
+        .ad-slide.active {
+            display: block; /* Show the active slide */
+        }
+        @keyframes fadeIn {
+            from {opacity: 0.4}
+            to {opacity: 1}
+        }
+        .dot-container {
+            text-align: center;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+        .dot {
+            cursor: pointer;
+            height: 10px;
+            width: 10px;
+            margin: 0 4px;
+            background-color: #bbb;
+            border-radius: 50%;
+            display: inline-block;
+            transition: background-color 0.6s ease;
+        }
+        .dot.active, .dot:hover {
+            background-color: #717171;
+        }
+    </style>
 </head>
 <body class="map-bg">
+    <header>
+        <div class="logo-title">
+            <img src="Ellipse 4.png" alt="Worker Logo">
+            <div class="logo"><span style="color: red;">N</span>EAR<span style="color: red;">M</span>E</div>
+        </div>
+        <div class="nav-right">
+            <button class="location-btn" onclick="getLocation()">📍 Location</button>
+            <span id="location-status"></span>
+            <button class="login-btn" onclick="window.location.href='login.html'">
+                <img src="user.png" alt="Login" style="width:16px; height:16px;"> Login
+            </button>
+        </div>
+    </header>
 
-  <!-- Header -->
-  <header>
-    <div class="logo-title">
-        <img src="Ellipse 4.png" alt="Worker Logo">
-        <div class="logo"><span style="color: red;">N</span>EAR<span style="color: red;">M</span>E</div>
+    <div class="slideshow-container" id="top-ads-slideshow">
+        <img class="ad-slide active" src="ad1.png"  alt="Advertisement 1">
+        <img class="ad-slide" src="ad2.png" alt="Advertisement 2" style="display:none;">
+        <img class="ad-slide" src="ad3.png" alt="Advertisement 3" style="display:none;">
+        <img class="ad-slide" src="ad4.png" alt="Advertisement 4" style="display:none;">
+        <img class="ad-slide" src="ad5.png" alt="Advertisement 5" style="display:none;">
+
+        <div class="dot-container" id="top-ads-dots">
+            <span class="dot active" onclick="currentSlide(1, 'top')"></span>
+            <span class="dot" onclick="currentSlide(2, 'top')"></span>
+            <span class="dot" onclick="currentSlide(3, 'top')"></span>
+            <span class="dot" onclick="currentSlide(4, 'top')"></span>
+            <span class="dot" onclick="currentSlide(5, 'top')"></span>
+        </div>
     </div>
-    <div class="nav-right">
-      <button class="location-btn" onclick="getLocation()">📍 Location</button>
-      <span id="location-status"></span>
-      <button class="login-btn" onclick="window.location.href='login.html'">
-        <img src="user.png" alt="Login" style="width:16px; height:16px;"> Login
-      </button>
+
+    <div class="container">
+        <div class="services-heading">
+            <img src="service.png" alt="Services Logo">
+            <h2>Available Services</h2>
+        </div>
+        <p style="text-align:center; color:black;">Choose the type of worker you need</p>
+        <div class="grid">
+            <div class="card" onclick="goToBooking('Cleaner')">
+                <img src="cleaner.jpg" alt="Cleaner"><p>Cleaner</p>
+            </div>
+            <div class="card" onclick="goToBooking('Electrician')">
+                <img src="electrician.jpg" alt="Electrician"><p>Electrician</p>
+            </div>
+            <div class="card" onclick="goToBooking('Plumber')">
+                <img src="plumber.jpg" alt="Plumber"><p>Plumber</p>
+            </div>
+            <div class="card" onclick="goToBooking('Coolie')">
+                <img src="coolie.jpg" alt="Coolie"><p>Coolie</p>
+            </div>
+            <div class="card" onclick="goToBooking('Mechanic')">
+                <img src="mechanic.jpg" alt="Mechanic"><p>Mechanic</p>
+            </div>
+        </div>
     </div>
-  </header>
 
-  <!-- Main Services Section -->
-  <div class="container">
-    <div class="services-heading">
-      <img src="service.png" alt="Services Logo">
-      <h2>Available Services</h2>
+    <div class="slideshow-container" id="bottom-ads-slideshow">
+        <img class="ad-slide active" src="ad6.jpg" alt="Advertisement 6">
+        <img class="ad-slide" src="ad7.jpg" alt="Advertisement 7" style="display:none;">
+        <img class="ad-slide" src="ad8.jpg" alt="Advertisement 8" style="display:none;">
+        <img class="ad-slide" src="ad9.jpg" alt="Advertisement 9" style="display:none;">
+        <img class="ad-slide" src="ad10.jpg" alt="Advertisement 10" style="display:none;">
+
+        <div class="dot-container" id="bottom-ads-dots">
+            <span class="dot active" onclick="currentSlide(1, 'bottom')"></span>
+            <span class="dot" onclick="currentSlide(2, 'bottom')"></span>
+            <span class="dot" onclick="currentSlide(3, 'bottom')"></span>
+            <span class="dot" onclick="currentSlide(4, 'bottom')"></span>
+            <span class="dot" onclick="currentSlide(5, 'bottom')"></span>
+        </div>
     </div>
-    <p style="text-align:center; color:black;">Choose the type of worker you need</p>
 
-    <div class="grid">
-      <div class="card" onclick="goToBooking('Cleaner')">
-        <img src="cleaner.jpg" alt="Cleaner"><p>Cleaner</p>
-      </div>
-      <div class="card" onclick="goToBooking('Electrician')">
-        <img src="electrician.jpg" alt="Electrician"><p>Electrician</p>
-      </div>
-      <div class="card" onclick="goToBooking('Plumber')">
-        <img src="plumber.jpg" alt="Plumber"><p>Plumber</p>
-      </div>
-      <div class="card" onclick="goToBooking('Coolie')">
-        <img src="coolie.jpg" alt="Coolie"><p>Coolie</p>
-      </div>
-      <div class="card" onclick="goToBooking('Mechanic')">
-        <img src="mechanic.jpg" alt="Mechanic"><p>Mechanic</p>
-      </div>
-    </div>
-  </div>
+    <footer><a href="about.html">📚 About Us</a></footer>
 
-  <footer><a href="about.html">📚 About Us</a></footer>
+    <script>
+        // Existing JavaScript functions
+        function goToBooking(service) {
+            window.location.href = "booking.html?service=" + encodeURIComponent(service);
+        }
+        function getLocation() {
+            let status = document.getElementById("location-status");
+            if (navigator.geolocation) {
+                status.innerText = "Fetching...";
+                navigator.geolocation.getCurrentPosition(showPosition, showError);
+            } else { status.innerText = "Not supported."; }
+        }
+        function showPosition(position) {
+            document.getElementById("location-status").innerText =
+                position.coords.latitude.toFixed(2) + ", " + position.coords.longitude.toFixed(2);
+        }
+        function showError() { document.getElementById("location-status").innerText = "Location error"; }
 
-  <script>
-    function goToBooking(service) {
-      window.location.href = "booking.html?service=" + encodeURIComponent(service);
-    }
-    function getLocation() {
-      let status = document.getElementById("location-status");
-      if (navigator.geolocation) {
-        status.innerText = "Fetching...";
-        navigator.geolocation.getCurrentPosition(showPosition, showError);
-      } else { status.innerText = "Not supported."; }
-    }
-    function showPosition(position) {
-      document.getElementById("location-status").innerText = 
-        position.coords.latitude.toFixed(2) + ", " + position.coords.longitude.toFixed(2);
-    }
-    function showError() { document.getElementById("location-status").innerText = "Location error"; }
-  </script>
+        // New JavaScript for Slideshow functionality
+        let slideIndexTop = 1;
+        let slideIndexBottom = 1;
+
+        // Initial call to start the auto-slide
+        showSlides(slideIndexTop, 'top');
+        showSlides(slideIndexBottom, 'bottom');
+        setInterval(() => plusSlides(1, 'top'), 5000); // Change top ad every 5 seconds
+        setInterval(() => plusSlides(1, 'bottom'), 7000); // Change bottom ad every 7 seconds
+
+        // Next/previous controls (optional but good practice)
+        function plusSlides(n, type) {
+            if (type === 'top') {
+                showSlides(slideIndexTop += n, type);
+            } else if (type === 'bottom') {
+                showSlides(slideIndexBottom += n, type);
+            }
+        }
+
+        // Thumbnail image controls (dots)
+        function currentSlide(n, type) {
+            if (type === 'top') {
+                showSlides(slideIndexTop = n, type);
+            } else if (type === 'bottom') {
+                showSlides(slideIndexBottom = n, type);
+            }
+        }
+
+        function showSlides(n, type) {
+            let i;
+            let containerId = type === 'top' ? 'top-ads-slideshow' : 'bottom-ads-slideshow';
+            let dotContainerId = type === 'top' ? 'top-ads-dots' : 'bottom-ads-dots';
+            let slides = document.getElementById(containerId).getElementsByClassName("ad-slide");
+            let dots = document.getElementById(dotContainerId).getElementsByClassName("dot");
+            let slideIndex = type === 'top' ? slideIndexTop : slideIndexBottom;
+
+            if (n > slides.length) { slideIndex = 1 }
+            if (n < 1) { slideIndex = slides.length }
+
+            for (i = 0; i < slides.length; i++) {
+                slides[i].style.display = "none";
+                slides[i].classList.remove("active");
+            }
+            for (i = 0; i < dots.length; i++) {
+                dots[i].className = dots[i].className.replace(" active", "");
+            }
+
+            slides[slideIndex - 1].style.display = "block";
+            slides[slideIndex - 1].classList.add("active");
+            dots[slideIndex - 1].className += " active";
+
+            if (type === 'top') {
+                slideIndexTop = slideIndex;
+            } else {
+                slideIndexBottom = slideIndex;
+            }
+        }
+    </script>
 </body>
 </html>
