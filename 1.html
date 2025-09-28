@@ -157,11 +157,11 @@
     </header>
 
     <div class="slideshow-container" id="top-ads-slideshow">
-        <img class="ad-slide active" src="ad1.jpg" alt="Advertisement 1">
-        <img class="ad-slide" src="ad2.jpg" alt="Advertisement 2" style="display:none;">
-        <img class="ad-slide" src="ad3.jpg" alt="Advertisement 3" style="display:none;">
-        <img class="ad-slide" src="ad4.jpg" alt="Advertisement 4" style="display:none;">
-        <img class="ad-slide" src="ad5.jpg" alt="Advertisement 5" style="display:none;">
+        <img class="ad-slide active" src="ad1.png" alt="Advertisement 1">
+        <img class="ad-slide" src="ad2.png" alt="Advertisement 2" style="display:none;">
+        <img class="ad-slide" src="ad3.png" alt="Advertisement 3" style="display:none;">
+        <img class="ad-slide" src="ad4.png" alt="Advertisement 4" style="display:none;">
+        <img class="ad-slide" src="ad5.png" alt="Advertisement 5" style="display:none;">
 
         <div class="dot-container" id="top-ads-dots">
             <span class="dot active" onclick="currentSlide(1, 'top')"></span>
@@ -197,7 +197,7 @@
         </div>
     </div>
 
-    <div class="slideshow-container" id="bottom-ads-slideshow">
+    <!-- <div class="slideshow-container" id="bottom-ads-slideshow">
         <img class="ad-slide active" src="ad6.jpg" alt="Advertisement 6">
         <img class="ad-slide" src="ad7.jpg" alt="Advertisement 7" style="display:none;">
         <img class="ad-slide" src="ad8.jpg" alt="Advertisement 8" style="display:none;">
@@ -211,7 +211,7 @@
             <span class="dot" onclick="currentSlide(4, 'bottom')"></span>
             <span class="dot" onclick="currentSlide(5, 'bottom')"></span>
         </div>
-    </div>
+    </div> -->
 
     <footer><a href="about.html">📚 About Us</a></footer>
 
@@ -235,30 +235,30 @@
 
         // New JavaScript for Slideshow functionality
         let slideIndexTop = 1;
-        let slideIndexBottom = 1;
+        // let slideIndexBottom = 1;
 
         // Initial call to start the auto-slide
         showSlides(slideIndexTop, 'top');
-        showSlides(slideIndexBottom, 'bottom');
+        //showSlides(slideIndexBottom, 'bottom');
         setInterval(() => plusSlides(1, 'top'), 5000); // Change top ad every 5 seconds
-        setInterval(() => plusSlides(1, 'bottom'), 7000); // Change bottom ad every 7 seconds
+        //setInterval(() => plusSlides(1, 'bottom'), 7000); // Change bottom ad every 7 seconds
 
         // Next/previous controls (optional but good practice)
         function plusSlides(n, type) {
             if (type === 'top') {
                 showSlides(slideIndexTop += n, type);
-            } else if (type === 'bottom') {
-                showSlides(slideIndexBottom += n, type);
-            }
+            } //else if (type === 'bottom') {
+            //     showSlides(slideIndexBottom += n, type);
+            // }
         }
 
         // Thumbnail image controls (dots)
         function currentSlide(n, type) {
             if (type === 'top') {
                 showSlides(slideIndexTop = n, type);
-            } else if (type === 'bottom') {
-                showSlides(slideIndexBottom = n, type);
-            }
+            } //else if (type === 'bottom') {
+               // showSlides(slideIndexBottom = n, type);
+           // }
         }
 
         function showSlides(n, type) {
