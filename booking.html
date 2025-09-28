@@ -5,6 +5,49 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Book a Worker - NearMe</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Styling to ensure the login/profile button is correctly sized */
+    .login-btn, .Myprofile-btn {
+        background-color: #2b5bcf;
+        color: white;
+        padding: 8px 14px;
+        font-size: 14px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: background 0.3s;
+    }
+    .notification-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        padding: 15px;
+        background: #4CAF50;
+        color: white;
+        text-align: center;
+        z-index: 1000;
+        font-weight: bold;
+    }
+    /* Simple form and container styles */
+    .container { max-width: 600px; margin: 50px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .booking-form { display: flex; flex-direction: column; gap: 15px; }
+    .booking-form input, .booking-form select, .book-btn, .back-btn { padding: 10px; border-radius: 6px; border: 1px solid #ccc; }
+    .book-btn { background: #2b5bcf; color: white; border: none; cursor: pointer; }
+    .book-btn:hover { background: #1d3e91; }
+    .back-btn { text-align: center; display: block; margin-top: 20px; text-decoration: none; color: #333; }
+    header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 20px;
+        background: rgba(255, 255, 255, 0.85);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+  </style>
 </head>
 <body class="booking-page">
 
@@ -54,23 +97,25 @@
   <script>
     $(document).ready(function () {
       // --- Setup and Header Update ---
-      const LOGGED_IN = localStorage.getItem("loggedIn") === "true";
-      const username = localStorage.getItem("username") || "Myprofile";
-      const urlParams = new URLSearchParams(window.location.search);
-      let serviceType = urlParams.get("service");
+      const LOGGED_IN = localStorage.getItem("loggedIn") === "true";
+      const username = localStorage.getItem("username") || "Myprofile";
+      const urlParams = new URLSearchParams(window.location.search);
+      let serviceType = urlParams.get("service");
+      let pendingBooking = null;
+      try { pendingBooking = JSON.parse(localStorage.getItem("pendingBooking")); } catch (e) {}
 
-      // Update Header Button based on login status
-      if (LOGGED_IN) {
-          $("#authBtn").text(username).css("background-color", "#4CAF50").off("click").on("click", function() {
-              window.location.href='user-dashboard.html';
-          });
-      } else {
-          $("#authBtn").text("Login").css("background-color", "#2b5bcf").off("click").on("click", function() {
-              window.location.href='login.html';
-          });
-      }
+      // Update Header Button based on login status
+      if (LOGGED_IN) {
+          $("#authBtn").text(username).css("background-color", "#4CAF50").off("click").on("click", function() {
+              window.location.href='user-dashboard.html';
+          });
+      } else {
+          $("#authBtn").text("Login").css("background-color", "#2b5bcf").off("click").on("click", function() {
+              window.location.href='login.html';
+          });
+      }
 
-      // ⏳ Date restrictions (Keep original logic)
+      // ⏳ Date restrictions 
       const today = new Date();
       const yyyy = today.getFullYear();
       const mm = String(today.getMonth() + 1).padStart(2, "0");
@@ -78,7 +123,7 @@
       const todayStr = `${yyyy}-${mm}-${dd}`;
       $("#date").attr("min", todayStr).attr("max", `${yyyy}-12-31`);
 
-      // 🔹 Filter workers based on service type from URL (Keep original logic)
+      // 🔹 Filter workers based on service type from URL
       if (serviceType) {
         const typeLower = serviceType.toLowerCase();
         $("#worker option").each(function () {
@@ -88,19 +133,29 @@
         });
       }
 
-      // 🚀 RESTORE AND AUTO-CONFIRM LOGIC
-      let pendingBooking = null;
-      try { pendingBooking = JSON.parse(localStorage.getItem("pendingBooking")); } catch (e) {}
-
-      // **Core change:** Only auto-confirm if user returned from login with the 'continue' flag
-      if (pendingBooking && LOGGED_IN && urlParams.get("continue") === "booking") {
-          // Pre-fill and auto-confirm
-          $("#worker").val(pendingBooking.worker);
-          $("#date").val(pendingBooking.date);
-          $("#time").val(pendingBooking.time);
-          autoConfirmBooking(pendingBooking);
-          return; 
+      
+      // 🛑 CORE CHANGE: Strict Login Enforcement
+      // If the user is NOT logged in AND they are not returning from a successful login
+      if (!LOGGED_IN && urlParams.get("continue") !== "booking") {
+          // Redirect to login.html, saving the destination URL
+          // The 'service' param ensures the worker list is filtered correctly after login.
+          const redirectUrl = "booking.html?continue=booking" + (serviceType ? "&service=" + encodeURIComponent(serviceType) : '');
+          alert("🔒 Please log in to view and confirm your booking.");
+          window.location.replace("login.html?redirect=" + encodeURIComponent(redirectUrl));
+          return; // Stop execution here
       }
+
+      // 🚀 RESTORE AND AUTO-CONFIRM LOGIC
+      // This runs if the user just logged in and was redirected here with a pending booking.
+      if (pendingBooking && LOGGED_IN && urlParams.get("continue") === "booking") {
+          // Pre-fill and auto-confirm
+          $("#worker").val(pendingBooking.worker);
+          $("#date").val(pendingBooking.date);
+          $("#time").val(pendingBooking.time);
+          autoConfirmBooking(pendingBooking);
+          return; 
+      }
+
 
       // 🔹 Form submission (Core Logic)
       $("#bookingForm").on("submit", function (e) {
@@ -120,28 +175,20 @@
           return;
         }
 
-        const bookingData = { worker, date, time, serviceType: serviceType || 'General' };
+        const bookingData = { worker, date, time, serviceType: serviceType || 'General' };
 
-        if (!LOGGED_IN) {
-          // **Path 1: NOT LOGGED IN (Coming from 1.html or similar) -> Redirect to login**
-          localStorage.setItem("pendingBooking", JSON.stringify(bookingData));
-          alert("🔒 Please log in to confirm your booking. Redirecting now...");
-          window.location.href = "login.html?redirect=booking.html";
-          return;
-        }
-
-        // **Path 2: ALREADY LOGGED IN (Coming from ar.html) -> Confirm immediately**
+        // Now that login is strictly enforced at the start, we only need the AJAX confirmation here.
         autoConfirmBooking(bookingData);
       });
 
       // 🔹 Function to confirm booking (with AJAX simulation)
       function autoConfirmBooking(data) {
-          const $button = $(".book-btn");
+          const $button = $(".book-btn");
         $.ajax({
           url: "dummyBookingAPI", // Placeholder
           method: "POST",
           data: data,
-          timeout: 100, 
+          timeout: 100, 
           beforeSend: function () {
             $button.text("⏳ Processing...").prop("disabled", true);
           },
@@ -152,10 +199,9 @@
             $("#confirmation").fadeIn();
             localStorage.removeItem("pendingBooking");
 
-             $button.text("Booking Confirmed!").css("background-color", "#4CAF50").prop("disabled", true);
-             
-             // **CRITICAL: Save booking to history in localStorage**
-             saveBookingToHistory(data);
+             $button.text("Booking Confirmed!").css("background-color", "#4CAF50").prop("disabled", true);
+             
+             saveBookingToHistory(data);
 
             // ⏩ Redirect to services page with success flag
             setTimeout(() => {
@@ -164,29 +210,27 @@
           }
         });
       }
-      
-      // Function to save booking data to localStorage history
-      function saveBookingToHistory(booking) {
-          const historyKey = 'userBookingHistory';
-          let history = [];
-          try {
-              history = JSON.parse(localStorage.getItem(historyKey)) || [];
-          } catch (e) {
-              console.error("Error parsing booking history:", e);
-          }
-          
-          const newBooking = {
-              worker: booking.worker,
-              service: booking.serviceType,
-              date: booking.date,
-              time: booking.time,
-              status: "confirmed",
-              timestamp: new Date().toISOString()
-          };
-          
-          history.unshift(newBooking); // Add to the start
-          localStorage.setItem(historyKey, JSON.stringify(history));
-      }
+      
+      // Function to save booking data to localStorage history
+      function saveBookingToHistory(booking) {
+          const historyKey = 'userBookingHistory';
+          let history = [];
+          try {
+              history = JSON.parse(localStorage.getItem(historyKey)) || [];
+          } catch (e) {}
+          
+          const newBooking = {
+              worker: booking.worker,
+              service: booking.serviceType,
+              date: booking.date,
+              time: booking.time,
+              status: "confirmed",
+              timestamp: new Date().toISOString()
+          };
+          
+          history.unshift(newBooking); 
+          localStorage.setItem(historyKey, JSON.stringify(history));
+      }
     });
   </script>
 
