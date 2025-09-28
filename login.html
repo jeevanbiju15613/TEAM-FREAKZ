@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,13 +14,15 @@
     .login-form button, .direct-btn { padding:12px; border:none; border-radius:6px; background:#4a7fe3; color:white; cursor:pointer; }
     .login-form button:hover, .direct-btn:hover { background:#365dcf; }
     .login-container p { text-align:center; margin-top:10px; font-size:0.9rem; color:#555; }
+    #loginMessage { text-align: center; margin-top: 15px; font-weight: bold; }
+    .remember { display:flex; align-items:center; gap:8px; font-size:0.9rem; color:#333; }
   </style>
 </head>
 <body>
   <div class="logo-title">
-        <img src="Ellipse 4.png" alt="Worker Logo">
-        <div class="logo"><span style="color: red;">N</span>EAR<span style="color: red;">M</span>E</div>
-    </div>
+    <img src="Ellipse 4.png" alt="Worker Logo">
+    <div class="logo"><span style="color: red;">N</span>EAR<span style="color: red;">M</span>E</div>
+  </div>
   <div class="login-container">
     <h2>Login</h2>
     <form class="login-form" id="loginForm">
@@ -32,54 +35,84 @@
       <input type="text" id="username" placeholder="Username" required>
       <input type="password" id="password" placeholder="Password" required>
 
-      <button type="submit">Login</button>
+      <div class="remember">
+        <input type="checkbox" id="rememberMe">
+        <label for="rememberMe">Remember Me</label>
+      </div>
+
+      <button type="submit" id="loginSubmitBtn">Login</button>
     </form>
 
-    <button class="direct-btn" onclick="window.location.href='1.html'">Go to Services</button>
+    <p id="loginMessage"></p>
+
+    <button class="direct-btn" onclick="window.location.href='ar.html'">Go to Services</button>
     <p>Don't have an account? <a href="register.html">Register</a></p>
   </div>
 
   <script>
-    // Single place that handles login and redirection.
+    // Auto-login if remembered
+    window.addEventListener("load", () => {
+      if (localStorage.getItem("loggedIn") === "true" && localStorage.getItem("rememberMe") === "true") {
+        const role = localStorage.getItem("role") || "user";
+        if (role === "user") {
+          window.location.href = "ar.html";
+        } else {
+          window.location.href = "worker-dashboard.html";
+        }
+      }
+    });
+
     document.getElementById("loginForm").addEventListener("submit", function (e) {
       e.preventDefault();
+
+      const loginMessage = document.getElementById("loginMessage");
+      const loginBtn = document.getElementById("loginSubmitBtn");
 
       const role = document.getElementById("role").value;
       const username = document.getElementById("username").value.trim();
       const password = document.getElementById("password").value.trim();
+      const rememberMe = document.getElementById("rememberMe").checked;
 
-      // simple front-end validation (replace with real auth later)
+      // Basic validation
       if (!username || !password) {
-        alert("Please enter username and password.");
+        loginMessage.innerText = "Please enter username and password.";
+        loginMessage.style.color = "red";
         return;
       }
 
-      // mark logged-in
-      localStorage.setItem("loggedIn", "true");
-      localStorage.setItem("role", role);
-      localStorage.setItem("username", username);
+      // Simulated login process
+      loginMessage.innerText = "⏳ Logging in...";
+      loginMessage.style.color = "orange";
+      loginBtn.disabled = true;
 
-      // if the login page was opened with ?redirect=<full_url>, go back there
-      // if the login page was opened with ?redirect=<full_url>, go back there
-const params = new URLSearchParams(window.location.search);
-const redirect = params.get("redirect");
-if (redirect) {
-  // always decode once (because we encoded before)
-  const dest = decodeURIComponent(redirect);
-  window.location.href = dest;
-  return;
-}
+      setTimeout(() => {
+        // Save login info
+        localStorage.setItem("loggedIn", "true");
+        localStorage.setItem("role", role);
+        localStorage.setItem("username", username);
+        localStorage.setItem("rememberMe", rememberMe);
 
+        loginMessage.innerText = "✅ Login successful! Redirecting...";
+        loginMessage.style.color = "green";
 
+        const params = new URLSearchParams(window.location.search);
+        const redirect = params.get("redirect");
 
+        if (redirect) {
+          const dest = decodeURIComponent(redirect);
+          window.location.href = dest;
+          return;
+        }
 
-      // default post-login landing
-      if (role === "user") {
-        window.location.href = "ar.html"; // your user services page
-      } else {
-        window.location.href = "worker-dashboard.html";
-      }
+        // Default post-login landing
+        if (role === "user") {
+          window.location.href = "ar.html";
+        } else {
+          window.location.href = "worker-dashboard.html";
+        }
+      }, 1500);
     });
   </script>
 </body>
 </html>
+```

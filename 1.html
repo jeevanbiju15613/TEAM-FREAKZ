@@ -96,7 +96,7 @@
         <div class="logo"><span style="color: red;">N</span>EAR<span style="color: red;">M</span>E</div>
     </div>
     <div class="nav-right">
-      <button class="location-btn" onclick="getLocation()">📍 Location</button>
+      <button class="location-btn">📍 Location</button>
       <span id="location-status"></span>
       <button class="login-btn" onclick="window.location.href='login.html'">
         <img src="user.png" alt="Login" style="width:16px; height:16px;"> Login
@@ -113,42 +113,57 @@
     <p style="text-align:center; color:black;">Choose the type of worker you need</p>
 
     <div class="grid">
-      <div class="card" onclick="goToBooking('Cleaner')">
-        <img src="cleaner.jpg" alt="Cleaner"><p>Cleaner</p>
-      </div>
-      <div class="card" onclick="goToBooking('Electrician')">
-        <img src="electrician.jpg" alt="Electrician"><p>Electrician</p>
-      </div>
-      <div class="card" onclick="goToBooking('Plumber')">
-        <img src="plumber.jpg" alt="Plumber"><p>Plumber</p>
-      </div>
-      <div class="card" onclick="goToBooking('Coolie')">
-        <img src="coolie.jpg" alt="Coolie"><p>Coolie</p>
-      </div>
-      <div class="card" onclick="goToBooking('Mechanic')">
-        <img src="mechanic.jpg" alt="Mechanic"><p>Mechanic</p>
-      </div>
+      <div class="card"><img src="cleaner.jpg" alt="Cleaner"><p>Cleaner</p></div>
+      <div class="card"><img src="electrician.jpg" alt="Electrician"><p>Electrician</p></div>
+      <div class="card"><img src="plumber.jpg" alt="Plumber"><p>Plumber</p></div>
+      <div class="card"><img src="coolie.jpg" alt="Coolie"><p>Coolie</p></div>
+      <div class="card"><img src="mechanic.jpg" alt="Mechanic"><p>Mechanic</p></div>
     </div>
   </div>
 
   <footer><a href="about.html">📚 About Us</a></footer>
 
+  <!-- jQuery CDN -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
   <script>
-    function goToBooking(service) {
-      window.location.href = "booking.html?service=" + encodeURIComponent(service);
-    }
-    function getLocation() {
-      let status = document.getElementById("location-status");
-      if (navigator.geolocation) {
-        status.innerText = "Fetching...";
-        navigator.geolocation.getCurrentPosition(showPosition, showError);
-      } else { status.innerText = "Not supported."; }
-    }
-    function showPosition(position) {
-      document.getElementById("location-status").innerText = 
-        position.coords.latitude.toFixed(2) + ", " + position.coords.longitude.toFixed(2);
-    }
-    function showError() { document.getElementById("location-status").innerText = "Location error"; }
+    $(document).ready(function () {
+
+      // Handle service card clicks (frontend only, no backend)
+      $(".card").on("click", function () {
+        let service = $(this).find("p").text(); 
+        let status = $("#location-status");
+
+        // Show feedback to user
+        status.fadeIn().text("⏳ Loading " + service + " booking page...");
+
+        // Simulate loading then redirect
+        setTimeout(() => {
+          window.location.href = "booking.html?service=" + encodeURIComponent(service);
+        }, 800);
+      });
+
+      // Handle location button
+      $(".location-btn").on("click", function () {
+        let status = $("#location-status");
+        status.fadeIn().text("📍 Fetching location...");
+
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            function (position) {
+              let coords = position.coords.latitude.toFixed(2) + ", " + position.coords.longitude.toFixed(2);
+              status.hide().text("✅ " + coords).fadeIn();
+            },
+            function () {
+              status.hide().text("❌ Location error").fadeIn();
+            }
+          );
+        } else {
+          status.hide().text("Not supported").fadeIn();
+        }
+      });
+
+    });
   </script>
 </body>
 </html>
