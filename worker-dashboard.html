@@ -5,54 +5,178 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Worker Dashboard - NearMe</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    body { font-family: Arial, sans-serif; margin:0; background:#f9f9f9; }
+    header { background:#4a7fe3; color:#fff; display:flex; justify-content:space-between; align-items:center; padding:10px 20px; }
+    .nav-right { display:flex; gap:15px; align-items:center; }
+    .logout-btn { background:#e63946; border:none; border-radius:6px; padding:6px 14px; color:#fff; cursor:pointer; }
+    .logout-btn:hover { background:#c92a36; }
+    .notification-bar { background:#fffae6; padding:10px 20px; border-bottom:1px solid #ddd; }
+    .container { max-width:900px; margin:30px auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
+    .calendar-list { list-style:none; padding:0; margin:0; }
+    .calendar-list li { padding:10px; margin-bottom:8px; background:#f4f6fb; border-radius:6px; }
+    .availability-container { margin-top:20px; }
+    .availability-slot { display:flex; gap:10px; align-items:center; margin-bottom:6px; }
+    .add-slot-btn, .delete-slot-btn { padding:6px 14px; border:none; border-radius:6px; cursor:pointer; background:#4a7fe3; color:white; transition: background 0.3s; }
+    .add-slot-btn:hover, .delete-slot-btn:hover { background:#365dcf; }
+    input[type="date"], input[type="time"] { padding:6px 8px; margin-right:6px; border-radius:6px; border:1px solid #ccc; }
+  </style>
 </head>
-<body class="worker-page">
+<body>
 
-  <!-- Header -->
-  <header>
-    <div class="logo-title">
-        <img src="Ellipse 4.png" alt="Worker Logo">
-        <div class="logo"><span style="color: red;">N</span>EAR<span style="color: red;">M</span>E</div>
-    </div>
-    <div class="nav-right">
-      <span class="worker-name">Welcome, Rahul (Electrician)</span>
-      <a href="worker-profile.html" class="nav-link">👤 My Profile</a>
-      <button class="logout-btn" onclick="window.location.href='1.html'">Logout</button>
-    </div>
-  </header>
-
-  <!-- Notification Bar -->
-  <div class="notification-bar">
-    🔔 You have a new booking on <b>Aug 20, 4:00 PM</b>
+<header>
+  <div class="logo-title">
+    <img src="Ellipse 4.png" alt="Worker Logo" width="60">
+    <div class="logo"><span style="color: red;">N</span>EAR<span style="color: red;">M</span>E</div>
   </div>
-
-  <!-- Worker Dashboard Content -->
-  <div class="container">
-    <h2>📅 Upcoming Bookings</h2>
-    <ul class="calendar-list">
-      <li><b>Aug 18</b> - 2:00 PM - Cleaning Service</li>
-      <li><b>Aug 20</b> - 4:00 PM - Electrician Service</li>
-      <li><b>Aug 22</b> - 10:30 AM - Plumbing Work</li>
-    </ul>
-
-    <h3>Availability</h3>
-    <button class="available-btn" onclick="setAvailability('Available')">✅ Mark as Available</button>
-    <button class="unavailable-btn" onclick="setAvailability('Unavailable')">❌ Mark as Unavailable</button>
+  <div class="nav-right">
+    <span id="workerNameRole">Welcome, Worker</span>
+    <a href="worker-profile.html">👤 My Profile</a>
+    <button class="logout-btn" onclick="logout()">Logout</button>
   </div>
+</header>
 
-  <script>
-    function setAvailability(status) {
-      // Save status in localStorage
-      localStorage.setItem("workerAvailability", status);
+<div class="notification-bar" id="notifBar">No new notifications.</div>
 
-      // Show alert
-      if (status === "Available") {
-        alert("✅ You are now marked as Available.");
-      } else {
-        alert("❌ You are now marked as Unavailable.");
-      }
-    }
-  </script>
+<div class="container">
+  <h2>📅 Upcoming Bookings</h2>
+  <ul id="bookingList" class="calendar-list"></ul>
+
+  <h3>Manage Availability</h3>
+  <div class="availability-container">
+    <input type="date" id="availDate">
+    <input type="time" id="availTime" min="07:00" max="21:00">
+    <button class="add-slot-btn" id="addSlotBtn">Add Slot</button>
+    <div id="availabilityList" style="margin-top:10px;"></div>
+  </div>
+</div>
+
+<script>
+function getCurrentWorker() {
+  const email = localStorage.getItem("loggedInUser");
+  if (!email) return null;
+  const users = JSON.parse(localStorage.getItem("users")) || [];
+  return users.find(u => u.email === email && u.role === "worker");
+}
+
+function logout() {
+  localStorage.removeItem("loggedIn");
+  localStorage.removeItem("loggedInUser");
+  localStorage.removeItem("username");
+  localStorage.removeItem("role");
+  window.location.href = "login.html";
+}
+
+function renderAvailability(worker) {
+  const listDiv = document.getElementById("availabilityList");
+  listDiv.innerHTML = "";
+  if (!worker.availability || worker.availability.length === 0) {
+    listDiv.innerHTML = "<p>No available slots</p>";
+    return;
+  }
+  worker.availability.forEach((slot, index) => {
+    const div = document.createElement("div");
+    div.className = "availability-slot";
+    div.innerHTML = `<span>${slot.replace("T", " ")}</span> 
+                     <button class="delete-slot-btn" data-index="${index}">Delete</button>`;
+    listDiv.appendChild(div);
+  });
+}
+
+function loadDashboard() {
+  const worker = getCurrentWorker();
+  if (!worker) {
+    alert("You must login first!");
+    window.location.href = "login.html";
+    return;
+  }
+
+  // Display name and categories
+  let categories = "";
+  if (worker.categories && worker.categories.length > 0) {
+    categories = worker.categories.join(", ");
+  } else if (worker.service) {
+    categories = worker.service; 
+  } else if (worker.role) {
+    categories = worker.role;
+  }
+  document.getElementById("workerNameRole").textContent =
+    `Welcome, ${worker.username || worker.name} (${categories})`;
+
+  // Bookings for this worker
+  const bookings = JSON.parse(localStorage.getItem("bookings_" + worker.email)) || [];
+  const list = document.getElementById("bookingList");
+  list.innerHTML = "";
+  if (bookings.length === 0) {
+    list.innerHTML = "<li>No bookings assigned yet.</li>";
+  } else {
+    bookings.forEach(b => {
+      const li = document.createElement("li");
+      li.textContent = `${b.date} - ${b.time} - ${b.service} for ${b.user}`;
+      list.appendChild(li);
+    });
+  }
+
+  // Notifications
+  const notif = JSON.parse(localStorage.getItem("notifications_" + worker.email)) || [];
+  document.getElementById("notifBar").textContent =
+    notif.length > 0 ? `🔔 ${notif[notif.length-1]}` : "No new notifications.";
+
+  // Render availability
+  renderAvailability(worker);
+}
+
+// Add new availability slot
+document.getElementById("addSlotBtn").addEventListener("click", () => {
+  const worker = getCurrentWorker();
+  if (!worker) return;
+
+  const date = document.getElementById("availDate").value;
+  const time = document.getElementById("availTime").value;
+  if (!date || !time) {
+    alert("⚠️ Select both date and time.");
+    return;
+  }
+
+  const slot = `${date}T${time}`;
+  worker.availability = worker.availability || [];
+  if (worker.availability.includes(slot)) {
+    alert("⚠️ This slot already exists.");
+    return;
+  }
+
+  worker.availability.push(slot);
+
+  const users = JSON.parse(localStorage.getItem("users")) || [];
+  const index = users.findIndex(u => u.email === worker.email);
+  users[index] = worker;
+  localStorage.setItem("users", JSON.stringify(users));
+
+  renderAvailability(worker);
+
+  // Clear inputs
+  document.getElementById("availDate").value = "";
+  document.getElementById("availTime").value = "";
+});
+
+// Delete slot
+document.getElementById("availabilityList").addEventListener("click", (e) => {
+  if (e.target.classList.contains("delete-slot-btn")) {
+    const worker = getCurrentWorker();
+    if (!worker) return;
+    const idx = parseInt(e.target.dataset.index);
+    worker.availability.splice(idx, 1);
+
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+    users[users.findIndex(u => u.email === worker.email)] = worker;
+    localStorage.setItem("users", JSON.stringify(users));
+
+    renderAvailability(worker);
+  }
+});
+
+window.onload = loadDashboard;
+</script>
 
 </body>
 </html>

@@ -103,7 +103,7 @@
 <header>
   <h1 class="logo"><span style="color: red;">N</span>EAR<span style="color: red;">M</span>E</h1>
   <div class="nav-right">
-    <button onclick="window.location.href='login.html'">Logout</button>
+    <button onclick="logout()">Logout</button>
   </div>
 </header>
 
@@ -114,25 +114,25 @@
       <input type="file" accept="image/*" id="profilePicInput">
     </div>
     <div>
-      <h2 id="workerName">Rahul Kumar</h2>
-      <p id="workerRole">Electrician</p>
+      <h2 id="workerName"></h2>
+      <p id="workerRole"></p>
     </div>
   </div>
 
   <div class="profile-details">
     <div>
       <label>Phone:</label>
-      <p id="workerPhone">+91 9876543210</p>
+      <p id="workerPhone"></p>
 
       <label>Address:</label>
-      <p id="workerAddress">Bangalore, Karnataka</p>
+      <p id="workerAddress"></p>
     </div>
     <div>
       <label>Experience:</label>
-      <p id="workerExperience">5 Years</p>
+      <p id="workerExperience"></p>
 
       <label>Skills:</label>
-      <p id="workerSkills">Wiring, Repair, Installations</p>
+      <p id="workerSkills"></p>
     </div>
   </div>
 
@@ -141,74 +141,103 @@
 </div>
 
 <script>
-  // Profile picture change
-  document.getElementById("profilePicInput").addEventListener("change", function(event){
-    const reader = new FileReader();
-    reader.onload = function(){
-      document.getElementById("profilePhoto").src = reader.result;
-      localStorage.setItem("workerPhoto", reader.result);
-    };
-    reader.readAsDataURL(event.target.files[0]);
-  });
+function logout() {
+  localStorage.removeItem("loggedInUser");
+  localStorage.removeItem("loggedIn");
+  window.location.href = "login.html";
+}
 
-  // Load saved profile picture and data
-  window.onload = function() {
-    const savedPhoto = localStorage.getItem("workerPhoto");
-    if(savedPhoto){
-      document.getElementById("profilePhoto").src = savedPhoto;
-    }
-    const savedData = JSON.parse(localStorage.getItem("workerData"));
-    if(savedData){
-      document.getElementById("workerName").textContent = savedData.name;
-      document.getElementById("workerRole").textContent = savedData.role;
-      document.getElementById("workerPhone").textContent = savedData.phone;
-      document.getElementById("workerAddress").textContent = savedData.address;
-      document.getElementById("workerExperience").textContent = savedData.experience;
-      document.getElementById("workerSkills").textContent = savedData.skills;
-    }
-  };
+function getCurrentWorker() {
+  const email = localStorage.getItem("loggedInUser");
+  if(!email) return null;
+  const users = JSON.parse(localStorage.getItem("users")) || [];
+  return users.find(u => u.email === email && u.role === "worker");
+}
 
-  function editProfile() {
-    const fields = [
-      {id: "workerName", type: "text"},
-      {id: "workerRole", type: "text"},
-      {id: "workerPhone", type: "text"},
-      {id: "workerAddress", type: "text"},
-      {id: "workerExperience", type: "text"},
-      {id: "workerSkills", type: "text"}
-    ];
-
-    fields.forEach(field => {
-      const el = document.getElementById(field.id);
-      el.outerHTML = `<input type="${field.type}" id="${field.id}" value="${el.textContent}">`;
-    });
-
-    const editBtn = document.getElementById("editBtn");
-    editBtn.outerHTML = `<button class="save-btn" id="saveBtn">Save Profile</button>`;
-
-    document.getElementById("saveBtn").addEventListener("click", function(){
-      const workerData = {};
-      fields.forEach(field => {
-        const inputEl = document.getElementById(field.id);
-        inputEl.outerHTML = `<p id="${field.id}">${inputEl.value}</p>`;
-        workerData[field.id.replace("worker","").toLowerCase()] = inputEl.value;
-      });
-
-      // Format Name and Role
-      const nameEl = document.getElementById("workerName");
-      nameEl.outerHTML = `<h2 id="workerName">${nameEl.textContent}</h2>`;
-      const roleEl = document.getElementById("workerRole");
-      roleEl.outerHTML = `<p id="workerRole">${roleEl.textContent}</p>`;
-
-      document.getElementById("saveBtn").outerHTML = `<button class="edit-btn" id="editBtn">Edit Profile</button>`;
-      document.getElementById("editBtn").addEventListener("click", editProfile);
-
-      localStorage.setItem("workerData", JSON.stringify(workerData));
-      alert("Profile updated!");
-    });
+// Load worker info on page load
+window.onload = function() {
+  const worker = getCurrentWorker();
+  if(!worker){
+    alert("Please login first!");
+    window.location.href = "login.html";
+    return;
   }
 
-  document.getElementById("editBtn").addEventListener("click", editProfile);
+  // Load profile picture
+  const savedPhoto = localStorage.getItem("workerPhoto_" + worker.email);
+  if(savedPhoto) document.getElementById("profilePhoto").src = savedPhoto;
+
+  // Load worker details
+  document.getElementById("workerName").textContent = worker.name || "";
+  document.getElementById("workerRole").textContent = worker.role || "";
+  document.getElementById("workerPhone").textContent = worker.phone || "";
+  document.getElementById("workerAddress").textContent = worker.address || "";
+  document.getElementById("workerExperience").textContent = worker.experience || "";
+  document.getElementById("workerSkills").textContent = worker.skills || "";
+};
+
+// Profile picture upload
+document.getElementById("profilePicInput").addEventListener("change", function(event){
+  const worker = getCurrentWorker();
+  if(!worker) return;
+
+  const reader = new FileReader();
+  reader.onload = function(){
+    document.getElementById("profilePhoto").src = reader.result;
+    localStorage.setItem("workerPhoto_" + worker.email, reader.result);
+  };
+  reader.readAsDataURL(event.target.files[0]);
+});
+
+// Edit profile
+function editProfile() {
+  const worker = getCurrentWorker();
+  if(!worker) return;
+
+  const fields = [
+    {id:"workerName", type:"text"},
+    {id:"workerRole", type:"text"},
+    {id:"workerPhone", type:"text"},
+    {id:"workerAddress", type:"text"},
+    {id:"workerExperience", type:"text"},
+    {id:"workerSkills", type:"text"}
+  ];
+
+  // Replace <p> with <input>
+  fields.forEach(f=>{
+    const el = document.getElementById(f.id);
+    el.outerHTML = `<input type="${f.type}" id="${f.id}" value="${el.textContent}">`;
+  });
+
+  // Change button to Save
+  const editBtn = document.getElementById("editBtn");
+  editBtn.outerHTML = `<button class="save-btn" id="saveBtn">Save Profile</button>`;
+
+  document.getElementById("saveBtn").addEventListener("click", function(){
+    // Update worker data
+    fields.forEach(f=>{
+      const inputEl = document.getElementById(f.id);
+      worker[f.id.replace("worker","").toLowerCase()] = inputEl.value;
+      inputEl.outerHTML = `<p id="${f.id}">${inputEl.value}</p>`;
+    });
+
+    // Save back to users array
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+    const index = users.findIndex(u => u.email === worker.email);
+    if(index !== -1){
+      users[index] = worker;
+      localStorage.setItem("users", JSON.stringify(users));
+    }
+
+    // Change button back to Edit
+    document.getElementById("saveBtn").outerHTML = `<button class="edit-btn" id="editBtn">Edit Profile</button>`;
+    document.getElementById("editBtn").addEventListener("click", editProfile);
+
+    alert("Profile updated!");
+  });
+}
+
+document.getElementById("editBtn").addEventListener("click", editProfile);
 </script>
 
 </body>

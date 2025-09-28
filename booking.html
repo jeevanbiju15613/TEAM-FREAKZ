@@ -6,7 +6,7 @@
   <title>Book a Worker - NearMe</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    .login-btn, .Myprofile-btn {
+    .login-btn {
         background-color: #2b5bcf;
         color: white;
         padding: 8px 14px;
@@ -30,6 +30,7 @@
         text-align: center;
         z-index: 1000;
         font-weight: bold;
+        display:none;
     }
     .container { max-width: 600px; margin: 50px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
     .booking-form { display: flex; flex-direction: column; gap: 15px; }
@@ -37,14 +38,7 @@
     .book-btn { background: #2b5bcf; color: white; border: none; cursor: pointer; }
     .book-btn:hover { background: #1d3e91; }
     .back-btn { text-align: center; display: block; margin-top: 20px; text-decoration: none; color: #333; }
-    header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px 20px;
-        background: rgba(255, 255, 255, 0.85);
-        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-    }
+    header { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: rgba(255,255,255,0.85); box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
   </style>
 </head>
 <body class="booking-page">
@@ -59,20 +53,28 @@
   </div>
 </header>
 
-<div class="notification-bar" style="display:none;">
+<div class="notification-bar">
   ✅ Your booking with <b id="workerName"></b> is confirmed!
 </div>
 
 <div class="container">
   <h2>🔧 Book a Worker</h2>
   <form class="booking-form" id="bookingForm">
+
+    <!-- Service Selection -->
+    <label for="service">Select Service</label>
+    <select id="service" name="service">
+      <option value="">--Choose Service--</option>
+      <option value="Electrician">Electrician</option>
+      <option value="Plumber">Plumber</option>
+      <option value="Cleaner">Cleaner</option>
+      <option value="Coolie">Coolie</option>
+      <option value="Mechanic">Mechanic</option>
+    </select>
+
     <label for="worker">Choose Worker</label>
     <select id="worker" name="worker">
-      <option>Electrician Rahul</option>
-      <option>Plumber Suresh</option>
-      <option>Cleaner Anita</option>
-      <option>Coolie Dev</option>
-      <option>Mechanic Javed</option>
+      <option disabled>Select a service and date first</option>
     </select>
 
     <label for="date">Select Date</label>
@@ -96,10 +98,6 @@
 $(document).ready(function () {
     const LOGGED_IN = localStorage.getItem("loggedIn") === "true";
     const username = localStorage.getItem("username") || "Myprofile";
-    const urlParams = new URLSearchParams(window.location.search);
-    let serviceType = urlParams.get("service");
-    let pendingBooking = null;
-    try { pendingBooking = JSON.parse(localStorage.getItem("pendingBooking")); } catch (e) {}
 
     // --- Update Header ---
     if (LOGGED_IN) {
@@ -108,11 +106,9 @@ $(document).ready(function () {
         });
     }
 
-    // Restrict booking page if not logged in
-    if (!LOGGED_IN && urlParams.get("continue") !== "booking") {
-        const redirectUrl = "booking.html?continue=booking" + (serviceType ? "&service=" + encodeURIComponent(serviceType) : '');
+    if (!LOGGED_IN) {
         alert("🔒 Please log in to view and confirm your booking.");
-        window.location.replace("login.html?redirect=" + encodeURIComponent(redirectUrl));
+        window.location.replace("login.html?redirect=" + encodeURIComponent(window.location.href));
         return;
     }
 
@@ -123,97 +119,88 @@ $(document).ready(function () {
     const dd = String(today.getDate()).padStart(2, "0");
     $("#date").attr("min", `${yyyy}-${mm}-${dd}`).attr("max", `${yyyy}-12-31`);
 
-    // Filter workers by service
-    if (serviceType) {
-        const typeLower = serviceType.toLowerCase();
-        $("#worker option").each(function () {
-            if (!$(this).text().toLowerCase().includes(typeLower)) {
-                $(this).remove();
-            }
+    // Load available workers for selected service & date
+    function loadAvailableWorkers() {
+        const selectedDate = $("#date").val();
+        const selectedService = $("#service").val();
+        const $workerSelect = $("#worker");
+        $workerSelect.empty();
+
+        if (!selectedDate || !selectedService) {
+            $workerSelect.append('<option disabled>Select a service and date first</option>');
+            return;
+        }
+
+        const users = JSON.parse(localStorage.getItem("users")) || [];
+        const availableWorkers = users.filter(u => 
+            u.role === "worker" &&
+            u.availability &&
+            u.availability.some(slot => slot.startsWith(selectedDate)) &&
+            u.categories && u.categories.includes(selectedService)
+        );
+
+        if (availableWorkers.length === 0) {
+            $workerSelect.append('<option disabled>No workers available for this service on this date</option>');
+            return;
+        }
+
+        availableWorkers.forEach(worker => {
+            const categories = worker.categories ? worker.categories.join(", ") : "";
+            $workerSelect.append(`<option value="${worker.email}">${worker.name} (${categories})</option>`);
         });
     }
 
-    // Restore pending booking
-    if (pendingBooking && LOGGED_IN && urlParams.get("continue") === "booking") {
-        $("#worker").val(pendingBooking.worker);
-        $("#date").val(pendingBooking.date);
-        $("#time").val(pendingBooking.time);
-        autoConfirmBooking(pendingBooking);
-        return;
-    }
+    // Trigger filtering whenever service or date changes
+    $("#service, #date").on("change", loadAvailableWorkers);
 
-    // Handle form submission
-    $("#bookingForm").on("submit", function (e) {
+    // Handle booking submission
+    $("#bookingForm").on("submit", function(e) {
         e.preventDefault();
-        const worker = $("#worker").val();
+        const workerEmail = $("#worker").val();
+        const serviceType = $("#service").val();
         const date = $("#date").val();
         const time = $("#time").val();
 
-        if (!worker || !date || !time) {
+        if (!workerEmail || !date || !time || !serviceType) {
             alert("⚠️ Please fill all fields.");
             return;
         }
+
         if (time < "07:00" || time > "21:00") {
             alert("⏰ Please select a time between 7:00 AM and 9:00 PM.");
             $("#time").val("");
             return;
         }
 
-        const bookingData = { worker, date, time, serviceType: serviceType || 'General' };
-        autoConfirmBooking(bookingData);
-    });
+        const users = JSON.parse(localStorage.getItem("users")) || [];
+        const workerObj = users.find(u => u.email === workerEmail);
 
-    // Confirm booking
-    function autoConfirmBooking(data) {
-        const $button = $(".book-btn");
-        $.ajax({
-            url: "dummyBookingAPI",
-            method: "POST",
-            data: data,
-            timeout: 100,
-            beforeSend: function () {
-                $button.text("⏳ Processing...").prop("disabled", true);
-            },
-            complete: function () {
-                $("#workerName").text(data.worker);
-                $(".notification-bar").fadeIn();
-                $("#confirmation").fadeIn();
-                localStorage.removeItem("pendingBooking");
+        const selectedSlot = date + "T" + time;
+        if (!workerObj.availability.includes(selectedSlot)) {
+            alert("⚠️ Selected slot is no longer available.");
+            return;
+        }
 
-                $button.text("Booking Confirmed!").css("background-color", "#4CAF50").prop("disabled", true);
-                
-                saveBookingToHistory(data);
+        // Remove booked slot
+        workerObj.availability = workerObj.availability.filter(s => s !== selectedSlot);
+        users[users.findIndex(u => u.email === workerEmail)] = workerObj;
+        localStorage.setItem("users", JSON.stringify(users));
 
-                setTimeout(() => {
-                    window.location.href = "ar.html?booking=success";
-                }, 2000);
-            }
-        });
-    }
-
-    // 🔑 FIXED: Save booking per-user
-    function saveBookingToHistory(booking) {
-        const user = localStorage.getItem("username");
-        if (!user) return; // safety
-
-        const historyKey = `userBookingHistory_${user}`;
-        let history = [];
-        try {
-            history = JSON.parse(localStorage.getItem(historyKey)) || [];
-        } catch (e) {}
-
-        const newBooking = {
-            worker: booking.worker,
-            service: booking.serviceType,
-            date: booking.date,
-            time: booking.time,
-            status: "confirmed",
-            timestamp: new Date().toISOString()
-        };
-
-        history.unshift(newBooking);
+        // Save booking for user
+        const historyKey = `userBookingHistory_${username}`;
+        const history = JSON.parse(localStorage.getItem(historyKey)) || [];
+        history.unshift({ worker: workerObj.name, service: serviceType, date, time, status: "confirmed", timestamp: new Date().toISOString() });
         localStorage.setItem(historyKey, JSON.stringify(history));
-    }
+
+        // Show notification
+        $("#workerName").text(workerObj.name);
+        $(".notification-bar").fadeIn();
+        $("#confirmation").fadeIn();
+
+        $(".book-btn").text("Booking Confirmed!").css("background-color", "#4CAF50").prop("disabled", true);
+
+        setTimeout(() => window.location.href = "ar.html?booking=success", 2000);
+    });
 });
 </script>
 

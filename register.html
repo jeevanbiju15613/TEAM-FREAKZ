@@ -86,6 +86,18 @@
         <input type="text" id="phone" placeholder="Phone Number">
         <input type="text" id="address" placeholder="Address (City, Area)">
         <input type="text" id="pincode" placeholder="Pin Code">
+        
+        <label for="category">Choose your Categories:</label>
+        <select id="category" multiple size="5">
+          <option value="Cleaner">Cleaner</option>
+          <option value="Electrician">Electrician</option>
+          <option value="Plumber">Plumber</option>
+          <option value="Carpenter">Carpenter</option>
+          <option value="Painter">Painter</option>
+          <option value="Mechanic">Mechanic</option>
+        </select>
+        <small style="color: #666; font-size: 0.85rem;">(Hold Ctrl or Command to select multiple)</small>
+
         <textarea id="skills" rows="3" placeholder="Skills / Qualifications"></textarea>
         <input type="number" id="experience" placeholder="Years of Experience"><br>
         <label>Upload Profile Photo:</label>
@@ -144,6 +156,13 @@
         return;
       }
 
+      // Collect categories if worker
+      let selectedCategories = [];
+      if (role === "worker") {
+        const categorySelect = document.getElementById("category");
+        selectedCategories = Array.from(categorySelect.selectedOptions).map(opt => opt.value);
+      }
+
       // Prepare user object
       const user = {
         role,
@@ -154,6 +173,7 @@
         phone: document.getElementById("phone").value || "",
         address: document.getElementById("address").value || "",
         pincode: document.getElementById("pincode").value || "",
+        categories: selectedCategories,  // array of chosen categories
         skills: document.getElementById("skills").value || "",
         experience: document.getElementById("experience").value || "",
         profilePic: null,
