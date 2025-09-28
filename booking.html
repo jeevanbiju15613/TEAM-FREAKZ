@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Book a Worker - NearMe</title>
-  <link rel="stylesheet" href="style.css" />
-  <style>
-    /* Styling to ensure the login/profile button is correctly sized */
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Book a Worker - NearMe</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
     .login-btn, .Myprofile-btn {
         background-color: #2b5bcf;
         color: white;
@@ -32,7 +31,6 @@
         z-index: 1000;
         font-weight: bold;
     }
-    /* Simple form and container styles */
     .container { max-width: 600px; margin: 50px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
     .booking-form { display: flex; flex-direction: column; gap: 15px; }
     .booking-form input, .booking-form select, .book-btn, .back-btn { padding: 10px; border-radius: 6px; border: 1px solid #ccc; }
@@ -51,188 +49,173 @@
 </head>
 <body class="booking-page">
 
-    <header>
-   <div class="logo-title">
-        <img src="Ellipse 4.png" alt="Worker Logo">
-        <div class="logo"><span style="color: red;">N</span>EAR<span style="color: red;">M</span>E</div>
-    </div>
-    <div class="nav-right">
-      <button class="login-btn" id="authBtn" onclick="window.location.href='login.html'">Login</button>
-    </div>
-  </header>
+<header>
+  <div class="logo-title">
+      <img src="Ellipse 4.png" alt="Worker Logo">
+      <div class="logo"><span style="color: red;">N</span>EAR<span style="color: red;">M</span>E</div>
+  </div>
+  <div class="nav-right">
+    <button class="login-btn" id="authBtn" onclick="window.location.href='login.html'">Login</button>
+  </div>
+</header>
 
-    <div class="notification-bar" style="display:none;">
-    ✅ Your booking with <b id="workerName"></b> is confirmed!
-  </div>
+<div class="notification-bar" style="display:none;">
+  ✅ Your booking with <b id="workerName"></b> is confirmed!
+</div>
 
-    <div class="container">
-    <h2>🔧 Book a Worker</h2>
-    <form class="booking-form" id="bookingForm">
-      <label for="worker">Choose Worker</label>
-      <select id="worker" name="worker">
-        <option>Electrician Rahul</option>
-        <option>Plumber Suresh</option>
-        <option>Cleaner Anita</option>
-        <option>Coolie Dev</option>
-        <option>Mechanic Javed</option>
-      </select>
+<div class="container">
+  <h2>🔧 Book a Worker</h2>
+  <form class="booking-form" id="bookingForm">
+    <label for="worker">Choose Worker</label>
+    <select id="worker" name="worker">
+      <option>Electrician Rahul</option>
+      <option>Plumber Suresh</option>
+      <option>Cleaner Anita</option>
+      <option>Coolie Dev</option>
+      <option>Mechanic Javed</option>
+    </select>
 
-      <label for="date">Select Date</label>
-      <input type="date" id="date" name="date">
+    <label for="date">Select Date</label>
+    <input type="date" id="date" name="date">
 
-      <label for="time">Select Time</label>
-      <input type="time" id="time" name="time" min="07:00" max="21:00">
+    <label for="time">Select Time</label>
+    <input type="time" id="time" name="time" min="07:00" max="21:00">
 
-      <button type="submit" class="book-btn">Confirm Booking</button>
+    <button type="submit" class="book-btn">Confirm Booking</button>
 
-      <p id="confirmation" style="display:none; color:green; margin-top:15px; font-weight:bold;">
-        ✅ Booking Confirmed! Redirecting to services...
-      </p>
-      <a href="ar.html" class="back-btn">⬅ Back to Services</a>
-    </form>
-  </div>
+    <p id="confirmation" style="display:none; color:green; margin-top:15px; font-weight:bold;">
+      ✅ Booking Confirmed! Redirecting to services...
+    </p>
+    <a href="ar.html" class="back-btn">⬅ Back to Services</a>
+  </form>
+</div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-  <script>
-    $(document).ready(function () {
-      // --- Setup and Header Update ---
-      const LOGGED_IN = localStorage.getItem("loggedIn") === "true";
-      const username = localStorage.getItem("username") || "Myprofile";
-      const urlParams = new URLSearchParams(window.location.search);
-      let serviceType = urlParams.get("service");
-      let pendingBooking = null;
-      try { pendingBooking = JSON.parse(localStorage.getItem("pendingBooking")); } catch (e) {}
+<script>
+$(document).ready(function () {
+    const LOGGED_IN = localStorage.getItem("loggedIn") === "true";
+    const username = localStorage.getItem("username") || "Myprofile";
+    const urlParams = new URLSearchParams(window.location.search);
+    let serviceType = urlParams.get("service");
+    let pendingBooking = null;
+    try { pendingBooking = JSON.parse(localStorage.getItem("pendingBooking")); } catch (e) {}
 
-      // Update Header Button based on login status
-      if (LOGGED_IN) {
-          $("#authBtn").text(username).css("background-color", "#4CAF50").off("click").on("click", function() {
-              window.location.href='user-dashboard.html';
-          });
-      } else {
-          $("#authBtn").text("Login").css("background-color", "#2b5bcf").off("click").on("click", function() {
-              window.location.href='login.html';
-          });
-      }
+    // --- Update Header ---
+    if (LOGGED_IN) {
+        $("#authBtn").text(username).css("background-color", "#4CAF50").off("click").on("click", function() {
+            window.location.href='user-dashboard.html';
+        });
+    }
 
-      // ⏳ Date restrictions 
-      const today = new Date();
-      const yyyy = today.getFullYear();
-      const mm = String(today.getMonth() + 1).padStart(2, "0");
-      const dd = String(today.getDate()).padStart(2, "0");
-      const todayStr = `${yyyy}-${mm}-${dd}`;
-      $("#date").attr("min", todayStr).attr("max", `${yyyy}-12-31`);
+    // Restrict booking page if not logged in
+    if (!LOGGED_IN && urlParams.get("continue") !== "booking") {
+        const redirectUrl = "booking.html?continue=booking" + (serviceType ? "&service=" + encodeURIComponent(serviceType) : '');
+        alert("🔒 Please log in to view and confirm your booking.");
+        window.location.replace("login.html?redirect=" + encodeURIComponent(redirectUrl));
+        return;
+    }
 
-      // 🔹 Filter workers based on service type from URL
-      if (serviceType) {
-        const typeLower = serviceType.toLowerCase();
-        $("#worker option").each(function () {
-          if (!$(this).text().toLowerCase().includes(typeLower)) {
-            $(this).remove();
-          }
-        });
-      }
+    // Date restrictions
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
+    $("#date").attr("min", `${yyyy}-${mm}-${dd}`).attr("max", `${yyyy}-12-31`);
 
-      
-      // 🛑 CORE CHANGE: Strict Login Enforcement
-      // If the user is NOT logged in AND they are not returning from a successful login
-      if (!LOGGED_IN && urlParams.get("continue") !== "booking") {
-          // Redirect to login.html, saving the destination URL
-          // The 'service' param ensures the worker list is filtered correctly after login.
-          const redirectUrl = "booking.html?continue=booking" + (serviceType ? "&service=" + encodeURIComponent(serviceType) : '');
-          alert("🔒 Please log in to view and confirm your booking.");
-          window.location.replace("login.html?redirect=" + encodeURIComponent(redirectUrl));
-          return; // Stop execution here
-      }
+    // Filter workers by service
+    if (serviceType) {
+        const typeLower = serviceType.toLowerCase();
+        $("#worker option").each(function () {
+            if (!$(this).text().toLowerCase().includes(typeLower)) {
+                $(this).remove();
+            }
+        });
+    }
 
-      // 🚀 RESTORE AND AUTO-CONFIRM LOGIC
-      // This runs if the user just logged in and was redirected here with a pending booking.
-      if (pendingBooking && LOGGED_IN && urlParams.get("continue") === "booking") {
-          // Pre-fill and auto-confirm
-          $("#worker").val(pendingBooking.worker);
-          $("#date").val(pendingBooking.date);
-          $("#time").val(pendingBooking.time);
-          autoConfirmBooking(pendingBooking);
-          return; 
-      }
+    // Restore pending booking
+    if (pendingBooking && LOGGED_IN && urlParams.get("continue") === "booking") {
+        $("#worker").val(pendingBooking.worker);
+        $("#date").val(pendingBooking.date);
+        $("#time").val(pendingBooking.time);
+        autoConfirmBooking(pendingBooking);
+        return;
+    }
 
+    // Handle form submission
+    $("#bookingForm").on("submit", function (e) {
+        e.preventDefault();
+        const worker = $("#worker").val();
+        const date = $("#date").val();
+        const time = $("#time").val();
 
-      // 🔹 Form submission (Core Logic)
-      $("#bookingForm").on("submit", function (e) {
-        e.preventDefault();
+        if (!worker || !date || !time) {
+            alert("⚠️ Please fill all fields.");
+            return;
+        }
+        if (time < "07:00" || time > "21:00") {
+            alert("⏰ Please select a time between 7:00 AM and 9:00 PM.");
+            $("#time").val("");
+            return;
+        }
 
-        const worker = $("#worker").val();
-        const date = $("#date").val();
-        const time = $("#time").val();
+        const bookingData = { worker, date, time, serviceType: serviceType || 'General' };
+        autoConfirmBooking(bookingData);
+    });
 
-        if (!worker || !date || !time) {
-          alert("⚠️ Please fill all fields.");
-          return;
-        }
-        if (time < "07:00" || time > "21:00") {
-          alert("⏰ Please select a time between 7:00 AM and 9:00 PM.");
-          $("#time").val("");
-          return;
-        }
+    // Confirm booking
+    function autoConfirmBooking(data) {
+        const $button = $(".book-btn");
+        $.ajax({
+            url: "dummyBookingAPI",
+            method: "POST",
+            data: data,
+            timeout: 100,
+            beforeSend: function () {
+                $button.text("⏳ Processing...").prop("disabled", true);
+            },
+            complete: function () {
+                $("#workerName").text(data.worker);
+                $(".notification-bar").fadeIn();
+                $("#confirmation").fadeIn();
+                localStorage.removeItem("pendingBooking");
 
-        const bookingData = { worker, date, time, serviceType: serviceType || 'General' };
+                $button.text("Booking Confirmed!").css("background-color", "#4CAF50").prop("disabled", true);
+                
+                saveBookingToHistory(data);
 
-        // Now that login is strictly enforced at the start, we only need the AJAX confirmation here.
-        autoConfirmBooking(bookingData);
-      });
+                setTimeout(() => {
+                    window.location.href = "ar.html?booking=success";
+                }, 2000);
+            }
+        });
+    }
 
-      // 🔹 Function to confirm booking (with AJAX simulation)
-      function autoConfirmBooking(data) {
-          const $button = $(".book-btn");
-        $.ajax({
-          url: "dummyBookingAPI", // Placeholder
-          method: "POST",
-          data: data,
-          timeout: 100, 
-          beforeSend: function () {
-            $button.text("⏳ Processing...").prop("disabled", true);
-          },
-          complete: function () {
-            // Confirmation UI Update
-            $("#workerName").text(data.worker);
-            $(".notification-bar").fadeIn();
-            $("#confirmation").fadeIn();
-            localStorage.removeItem("pendingBooking");
+    // 🔑 FIXED: Save booking per-user
+    function saveBookingToHistory(booking) {
+        const user = localStorage.getItem("username");
+        if (!user) return; // safety
 
-             $button.text("Booking Confirmed!").css("background-color", "#4CAF50").prop("disabled", true);
-             
-             saveBookingToHistory(data);
+        const historyKey = `userBookingHistory_${user}`;
+        let history = [];
+        try {
+            history = JSON.parse(localStorage.getItem(historyKey)) || [];
+        } catch (e) {}
 
-            // ⏩ Redirect to services page with success flag
-            setTimeout(() => {
-              window.location.href = "ar.html?booking=success";
-            }, 2000);
-          }
-        });
-      }
-      
-      // Function to save booking data to localStorage history
-      function saveBookingToHistory(booking) {
-          const historyKey = 'userBookingHistory';
-          let history = [];
-          try {
-              history = JSON.parse(localStorage.getItem(historyKey)) || [];
-          } catch (e) {}
-          
-          const newBooking = {
-              worker: booking.worker,
-              service: booking.serviceType,
-              date: booking.date,
-              time: booking.time,
-              status: "confirmed",
-              timestamp: new Date().toISOString()
-          };
-          
-          history.unshift(newBooking); 
-          localStorage.setItem(historyKey, JSON.stringify(history));
-      }
-    });
-  </script>
+        const newBooking = {
+            worker: booking.worker,
+            service: booking.serviceType,
+            date: booking.date,
+            time: booking.time,
+            status: "confirmed",
+            timestamp: new Date().toISOString()
+        };
+
+        history.unshift(newBooking);
+        localStorage.setItem(historyKey, JSON.stringify(history));
+    }
+});
+</script>
 
 </body>
 </html>

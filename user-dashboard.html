@@ -3,10 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>User Registration & Profile</title>
+  <title>User Dashboard</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    /* (Copied your original dashboard CSS exactly so nothing changes visually) */
     body {
       font-family: Arial, sans-serif;
       background: #f0f2f5;
@@ -202,10 +201,10 @@
 <footer style="text-align:center; margin:20px;">&copy; 2025 NearMe. All rights reserved.</footer>
 
 <script>
-  const BOOKING_HISTORY_KEY = 'userBookingHistory';
-  const NOTIFICATION_KEY = 'userNotifications';
-
-  let currentUser = null; // will hold the logged-in user object
+  function getUserKey(baseKey) {
+    const username = localStorage.getItem("username");
+    return username ? `${baseKey}_${username}` : baseKey;
+  }
 
   function toggleSidebar() {
     document.getElementById('notificationSidebar').classList.toggle('open');
@@ -216,17 +215,7 @@
     const reader = new FileReader();
     reader.onload = function(){
       document.getElementById('profilePic').src = reader.result;
-      if (currentUser) {
-        currentUser.profilePic = reader.result;
-        saveUserData(currentUser);
-        // For backward compatibility, also set userData
-        localStorage.setItem("userData", JSON.stringify({
-          name: currentUser.name,
-          email: currentUser.email,
-          phone: currentUser.phone,
-          address: currentUser.address
-        }));
-      }
+      localStorage.setItem(getUserKey("profilePic"), reader.result);
     }
     reader.readAsDataURL(event.target.files[0]);
   }
@@ -236,77 +225,40 @@
   }
 
   function logout() {
-    localStorage.removeItem("loggedInUser");
     localStorage.removeItem("loggedIn");
-    // keep "users" intact
+    localStorage.removeItem("username");
     window.location.href = "1.html";
-  }
-
-  // Save user object back into users[] stored in localStorage
-  function saveUserData(user) {
-    let users = JSON.parse(localStorage.getItem("users")) || [];
-    const idx = users.findIndex(u => u.email === user.email);
-    if (idx >= 0) users[idx] = user;
-    else users.push(user);
-    localStorage.setItem("users", JSON.stringify(users));
-    // Also keep legacy single-object "userData" for other scripts
-    localStorage.setItem("userData", JSON.stringify({
-      name: user.name, email: user.email, phone: user.phone, address: user.address
-    }));
-    // ensure session still points to this user
-    localStorage.setItem("loggedInUser", user.email);
-    localStorage.setItem("username", user.username || "");
   }
 
   function loadBookingHistory() {
     const historyList = document.getElementById("historyList");
     historyList.innerHTML = '';
-
-    // Prefer per-user bookings attached to currentUser
-    let history = (currentUser && currentUser.bookings) ? currentUser.bookings.slice() : [];
-
-    // fallback to legacy global list
-    if ((!history || history.length === 0)) {
-      try {
-        const globalHist = JSON.parse(localStorage.getItem(BOOKING_HISTORY_KEY)) || [];
-        // if global items have a 'user' or 'username' field, try to filter; otherwise show all
-        // prefer global that include email or username matching currentUser
-        if (currentUser) {
-          const filtered = globalHist.filter(b => (b.userEmail && b.userEmail === currentUser.email) || (b.username && b.username === currentUser.username));
-          history = filtered.length ? filtered : globalHist;
-        } else {
-          history = globalHist;
-        }
-      } catch (e) {
-        history = [];
-      }
+    let history = [];
+    try {
+      history = JSON.parse(localStorage.getItem(getUserKey("userBookingHistory"))) || [];
+    } catch (e) {
+      history = [];
     }
-
-    if (!history || history.length === 0) {
+    if (history.length === 0) {
       historyList.innerHTML = '<div class="booking-item" style="border-left-color: #ccc;">No recent bookings found.</div>';
       return;
     }
-
-    // show newest first
-    history.slice().reverse().forEach(booking => {
+    history.reverse().forEach(booking => {
       const statusIcon = booking.status === 'confirmed' ? '✅' : '❌';
       const statusClass = booking.status === 'confirmed' ? 'confirmed' : 'canceled';
-      let dateStr = booking.date || 'Unknown Date';
-      let timeStr = booking.time || 'Unknown Time';
+      let dateStr = 'Unknown Date';
+      let timeStr = 'Unknown Time';
       try {
         const dateOptions = { year: 'numeric', month: 'short', day: 'numeric' };
         const timeOptions = { hour: '2-digit', minute: '2-digit' };
-        if (booking.date && booking.time) {
-          dateStr = new Date(booking.date + 'T' + booking.time).toLocaleDateString('en-US', dateOptions);
-          timeStr = new Date('2000/01/01 ' + booking.time).toLocaleTimeString('en-US', timeOptions);
-        }
-      } catch (e) { /* ignore */ }
-
+        dateStr = new Date(booking.date + 'T' + booking.time).toLocaleDateString('en-US', dateOptions);
+        timeStr = new Date('2000/01/01 ' + booking.time).toLocaleTimeString('en-US', timeOptions);
+      } catch (e) {}
       const item = document.createElement("div");
       item.className = `booking-item ${statusClass}`;
       item.innerHTML = `
         <span>
-          <strong>${statusIcon} ${booking.worker || 'Unknown'} (${booking.service || ''})</strong><br>
+          <strong>${statusIcon} ${booking.worker} (${booking.service})</strong><br>
           <small>Scheduled for ${dateStr}, ${timeStr}</small>
         </span>
       `;
@@ -320,7 +272,7 @@
     notificationList.innerHTML = '';
     let notifications = [];
     try {
-      notifications = JSON.parse(localStorage.getItem(NOTIFICATION_KEY)) || [];
+      notifications = JSON.parse(localStorage.getItem(getUserKey("userNotifications"))) || [];
     } catch (e) {
       notifications = [];
     }
@@ -329,7 +281,7 @@
       badge.style.display = 'none';
       return;
     }
-    notifications.slice().reverse().forEach(note => {
+    notifications.reverse().forEach(note => {
       const item = document.createElement("div");
       item.className = "notification-item";
       item.innerText = note.message || note;
@@ -340,53 +292,26 @@
   }
 
   window.onload = function() {
-    // Determine current user session
-    let loggedEmail = localStorage.getItem("loggedInUser");
-    const legacyLogged = localStorage.getItem("username"); // fallback
-
-    let users = JSON.parse(localStorage.getItem("users")) || [];
-
-    // fallback: if legacy loggedIn=true with a username but no loggedInUser, try to map username -> email
-    if (!loggedEmail && legacyLogged) {
-      const byUsername = users.find(u => u.username && u.username.toLowerCase() === legacyLogged.toLowerCase());
-      if (byUsername) {
-        loggedEmail = byUsername.email;
-        localStorage.setItem("loggedInUser", loggedEmail);
-      }
-    }
-
-    if (!loggedEmail) {
-      alert("You must log in first!");
-      window.location.href = "login.html";
+    const username = localStorage.getItem("username");
+    const loggedIn = localStorage.getItem("loggedIn");
+    if (!loggedIn || !username) {
+      alert("You should login first!");
+      window.location.href = "1.html";
       return;
     }
 
-    currentUser = users.find(u => u.email === loggedEmail);
-    if (!currentUser) {
-      alert("User not found. Please log in again.");
-      // clear session keys that are inconsistent
-      localStorage.removeItem("loggedInUser");
-      localStorage.removeItem("loggedIn");
-      window.location.href = "login.html";
-      return;
-    }
+    const storedData = JSON.parse(localStorage.getItem(getUserKey("userData")));
+    const storedPic = localStorage.getItem(getUserKey("profilePic"));
 
-    // Fill profile fields
-    document.getElementById("userName").value = currentUser.name || "";
-    document.getElementById("userEmail").value = currentUser.email || "";
-    document.getElementById("userPhone").value = currentUser.phone || "";
-    document.getElementById("userAddress").value = currentUser.address || "";
-    if (currentUser.profilePic) {
-      document.getElementById("profilePic").src = currentUser.profilePic;
+    if(storedData){
+      document.getElementById("userName").value = storedData.name || "";
+      document.getElementById("userEmail").value = storedData.email || "";
+      document.getElementById("userPhone").value = storedData.phone || "";
+      document.getElementById("userAddress").value = storedData.address || "";
     }
-    // keep legacy userData too
-    localStorage.setItem("userData", JSON.stringify({
-      name: currentUser.name,
-      email: currentUser.email,
-      phone: currentUser.phone,
-      address: currentUser.address
-    }));
-
+    if(storedPic){
+      document.getElementById("profilePic").src = storedPic;
+    }
     loadBookingHistory();
     loadNotifications();
   };
@@ -399,16 +324,15 @@
   });
 
   document.getElementById("registerBtn").addEventListener("click", function(){
-    if (!currentUser) {
-      alert("No user loaded.");
-      return;
-    }
-    currentUser.name = document.getElementById("userName").value;
-    currentUser.phone = document.getElementById("userPhone").value;
-    currentUser.address = document.getElementById("userAddress").value;
-    saveUserData(currentUser);
+    const existingData = JSON.parse(localStorage.getItem(getUserKey("userData"))) || {};
+    const updatedData = {
+      name: document.getElementById("userName").value,
+      email: document.getElementById("userEmail").value || existingData.email || "", 
+      phone: document.getElementById("userPhone").value,
+      address: document.getElementById("userAddress").value
+    };
+    localStorage.setItem(getUserKey("userData"), JSON.stringify(updatedData));
     alert("Profile saved!");
-    // set fields readonly
     document.getElementById("userName").setAttribute("readonly", true);
     document.getElementById("userPhone").setAttribute("readonly", true);
     document.getElementById("userAddress").setAttribute("readonly", true);
