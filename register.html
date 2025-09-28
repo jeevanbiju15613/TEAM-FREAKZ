@@ -80,7 +80,8 @@
       <input type="password" id="password" placeholder="Password" required>
       <small class="password-hint">Password must be at least 8 characters long and include at least 1 number.</small>
       <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
-
+      <input type="number" id="phone" placeholder="Phone Number" required>
+      <input type="text" id="address" placeholder="Address" required>
       <!-- Worker-specific fields -->
       <div id="workerFields" class="hidden">
         <input type="text" id="phone" placeholder="Phone Number">
@@ -132,7 +133,8 @@
       const name = document.getElementById("name").value.trim();
       const email = document.getElementById("email").value.trim().toLowerCase();
       const username = document.getElementById("username").value.trim();
-
+      const phone=document.getElementById("phone").value.trim();
+      const Address=document.getElementById("address").value.trim();
       // basic uniqueness checks
       let users = JSON.parse(localStorage.getItem("users")) || [];
       if (users.some(u => u.username && u.username.toLowerCase() === username.toLowerCase())) {
@@ -170,6 +172,8 @@
         localStorage.setItem("loggedInUser", user.email);
         localStorage.setItem("username", user.username);
         localStorage.setItem("role", user.role);
+        localStorage.setItem("phone", user.phone);
+        localStorage.setItem("Address", user.address);
         alert("✅ Registered and logged in.");
         // redirect by role
         if (user.role === "worker") {
