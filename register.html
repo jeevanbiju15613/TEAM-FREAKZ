@@ -56,9 +56,9 @@
 <body>
 
   <header>
-   <div class="logo-title">
-        <img src="Ellipse 4.png" alt="Worker Logo">
-        <div class="logo"><span style="color: red;">N</span>EAR<span style="color: red;">M</span>E</div>
+    <div class="logo-title">
+      <img src="Ellipse 4.png" alt="Worker Logo">
+      <div class="logo"><span style="color: red;">N</span>EAR<span style="color: red;">M</span>E</div>
     </div>
   </header>
 
@@ -76,19 +76,17 @@
       <input type="text" id="name" placeholder="Full Name" required>
       <input type="email" id="email" placeholder="Email" required>
       <input type="text" id="username" placeholder="Username" required>
-      
       <input type="password" id="password" placeholder="Password" required>
       <small class="password-hint">Password must be at least 8 characters long and include at least 1 number.</small>
       <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
       <input type="number" id="phone" placeholder="Phone Number" required>
       <input type="text" id="address" placeholder="Address" required>
+
       <!-- Worker-specific fields -->
       <div id="workerFields" class="hidden">
-        <input type="text" id="phone" placeholder="Phone Number">
-        <input type="text" id="address" placeholder="Address (City, Area)">
-        <input type="text" id="pincode" placeholder="Pin Code">
+        <input type="number" id="experience" placeholder="Years of Experience"><br>
         
-        <label for="category">Choose your Categories:</label>
+        <label for="category">Choose your Categories:</label><br>
         <select id="category" multiple size="5">
           <option value="Cleaner">Cleaner</option>
           <option value="Electrician">Electrician</option>
@@ -99,8 +97,7 @@
         </select>
         <small style="color: #666; font-size: 0.85rem;">(Hold Ctrl or Command to select multiple)</small>
 
-        <textarea id="skills" rows="3" placeholder="Skills / Qualifications"></textarea>
-        <input type="number" id="experience" placeholder="Years of Experience"><br>
+        <br><textarea id="skills" rows="3" placeholder="Skills / Qualifications"></textarea><br>
         <label>Upload Profile Photo:</label>
         <input type="file" id="photo" accept="image/*">
       </div>
@@ -128,7 +125,6 @@
       let password = document.getElementById("password").value;
       let confirmPassword = document.getElementById("confirmPassword").value;
 
-      // Regex: Minimum 8 characters, at least 1 number
       let passwordPattern = /^(?=.*[0-9]).{8,}$/;
 
       if (!passwordPattern.test(password)) {
@@ -145,9 +141,9 @@
       const name = document.getElementById("name").value.trim();
       const email = document.getElementById("email").value.trim().toLowerCase();
       const username = document.getElementById("username").value.trim();
-      const phone=document.getElementById("phone").value.trim();
-      const Address=document.getElementById("address").value.trim();
-      // basic uniqueness checks
+      const phone = document.getElementById("phone").value.trim();
+      const address = document.getElementById("address").value.trim();
+
       let users = JSON.parse(localStorage.getItem("users")) || [];
       if (users.some(u => u.username && u.username.toLowerCase() === username.toLowerCase())) {
         alert("Username already taken. Choose another.");
@@ -172,30 +168,24 @@
         email,
         username,
         password,
-        phone: document.getElementById("phone").value || "",
-        address: document.getElementById("address").value || "",
-        pincode: document.getElementById("pincode").value || "",
-        categories: selectedCategories,  // array of chosen categories
+        phone,
+        address,
+        categories: selectedCategories,
         skills: document.getElementById("skills").value || "",
         experience: document.getElementById("experience").value || "",
         profilePic: null,
-        bookings: [] // per-user booking list
+        bookings: []
       };
 
-      // If photo provided, read as DataURL and then save
       const photoInput = document.getElementById("photo");
       function finalizeRegistration() {
         users.push(user);
         localStorage.setItem("users", JSON.stringify(users));
-        // set session
         localStorage.setItem("loggedIn", "true");
         localStorage.setItem("loggedInUser", user.email);
         localStorage.setItem("username", user.username);
         localStorage.setItem("role", user.role);
-        localStorage.setItem("phone", user.phone);
-        localStorage.setItem("Address", user.address);
         alert("✅ Registered and logged in.");
-        // redirect by role
         if (user.role === "worker") {
           window.location.href = "worker-dashboard.html";
         } else {
