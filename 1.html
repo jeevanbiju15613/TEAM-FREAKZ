@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Near Me - Services (Guest)</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <style>
-        /* Existing CSS for grid, cards, and header */
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -87,7 +87,6 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.08);
         }
 
-        /* CSS for Slideshows */
         .slideshow-container {
             max-width: 900px;
             margin: 20px auto;
@@ -95,33 +94,33 @@
             overflow: hidden;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            height: 150px; 
         }
         #top-ads-slideshow {
             margin-top: 10px;
         }
-        #top-ads-slideshow .ad-slide {
-            height: 150px;
-        }
         .ad-slide {
-            display: none;
+            position: absolute; 
+            top: 0;
+            left: 0;
             width: 100%;
-            height: 200px;
+            height: 100%;
             object-fit: cover;
-            animation: fadeIn 1.5s;
+            opacity: 0; 
+            transition: opacity 0.8s ease-in-out;
         }
         .ad-slide.active {
-            display: block;
-        }
-        @keyframes fadeIn {
-            from {opacity: 0.4}
-            to {opacity: 1}
+            opacity: 1;
+            z-index: 10;
         }
         .dot-container {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
             text-align: center;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.9);
-            border-bottom-left-radius: 12px;
-            border-bottom-right-radius: 12px;
+            padding: 10px 0;
+            background: rgba(0, 0, 0, 0.4); 
+            z-index: 20;
         }
         .dot {
             cursor: pointer;
@@ -134,7 +133,7 @@
             transition: background-color 0.6s ease;
         }
         .dot.active, .dot:hover {
-            background-color: #717171;
+            background-color: #fff; 
         }
     </style>
 </head>
@@ -155,18 +154,18 @@
     </header>
 
     <div class="slideshow-container" id="top-ads-slideshow">
-        <img class="ad-slide active" src="ad1.png" alt="Advertisement 1">
-        <img class="ad-slide" src="ad2.png" alt="Advertisement 2" style="display:none;">
-        <img class="ad-slide" src="ad3.png" alt="Advertisement 3" style="display:none;">
-        <img class="ad-slide" src="ad4.png" alt="Advertisement 4" style="display:none;">
-        <img class="ad-slide" src="ad5.png" alt="Advertisement 5" style="display:none;">
+        <img class="ad-slide" src="ad1.png" alt="Advertisement 1">
+        <img class="ad-slide" src="ad2.png" alt="Advertisement 2">
+        <img class="ad-slide" src="ad3.png" alt="Advertisement 3">
+        <img class="ad-slide" src="ad4.png" alt="Advertisement 4">
+        <img class="ad-slide" src="ad5.png" alt="Advertisement 5">
 
         <div class="dot-container" id="top-ads-dots">
-            <span class="dot active" onclick="currentSlide(1, 'top')"></span>
-            <span class="dot" onclick="currentSlide(2, 'top')"></span>
-            <span class="dot" onclick="currentSlide(3, 'top')"></span>
-            <span class="dot" onclick="currentSlide(4, 'top')"></span>
-            <span class="dot" onclick="currentSlide(5, 'top')"></span>
+            <span class="dot" data-slide-index="0"></span>
+            <span class="dot" data-slide-index="1"></span>
+            <span class="dot" data-slide-index="2"></span>
+            <span class="dot" data-slide-index="3"></span>
+            <span class="dot" data-slide-index="4"></span>
         </div>
     </div>
 
@@ -198,63 +197,62 @@
     <footer><a href="about.html">📚 About Us</a></footer>
 
     <script>
-        // --- Core Logic for 1.html: ENFORCE LOGIN ---
         const LOGGED_IN_STATUS = localStorage.getItem("loggedIn") === "true";
 
         function goToBooking(service) {
             if (!LOGGED_IN_STATUS) {
-                // If NOT logged in, redirect directly to login.html
                 const redirectUrl = "booking.html?service=" + encodeURIComponent(service);
                 alert("🔒 Please log in to proceed with your booking.");
                 window.location.href = "login.html?redirect=" + encodeURIComponent(redirectUrl);
             } else {
-                // If ALREADY logged in, proceed to the booking page
                 window.location.href = "booking.html?service=" + encodeURIComponent(service);
             }
         }
         
-        // --- Slideshow Logic ---
-        let slideIndexTop = 1;
-        showSlides(slideIndexTop, 'top');
-        setInterval(() => plusSlides(1, 'top'), 5000);
+        $(document).ready(function() {
+            let currentIndex = 0;
+            const slides = $('#top-ads-slideshow .ad-slide');
+            const dots = $('#top-ads-dots .dot');
+            const slideCount = slides.length;
+            const fadeDuration = 800; 
+            const intervalTime = 5000; 
 
-        function plusSlides(n, type) {
-            if (type === 'top') { showSlides(slideIndexTop += n, type); }
-        }
-        function currentSlide(n, type) {
-            if (type === 'top') { showSlides(slideIndexTop = n, type); }
-        }
-        function showSlides(n, type) {
-            let i;
-            let containerId = type === 'top' ? 'top-ads-slideshow' : 'bottom-ads-slideshow';
-            let dotContainerId = type === 'top' ? 'top-ads-dots' : 'bottom-ads-dots';
-            const container = document.getElementById(containerId);
-            if (!container) return; 
-            let slides = container.getElementsByClassName("ad-slide");
-            let dots = document.getElementById(dotContainerId).getElementsByClassName("dot");
-            let slideIndex = type === 'top' ? slideIndexTop : 1; 
+            function showSlide(index) {
+                if (index >= slideCount) index = 0;
+                if (index < 0) index = slideCount - 1;
 
-            if (n > slides.length) { slideIndex = 1 }
-            if (n < 1) { slideIndex = slides.length }
+                const $currentSlide = slides.eq(currentIndex);
+                $currentSlide.removeClass('active').animate({ opacity: 0 }, fadeDuration);
 
-            for (i = 0; i < slides.length; i++) {
-                slides[i].style.display = "none";
-                slides[i].classList.remove("active");
-            }
-            for (i = 0; i < dots.length; i++) {
-                dots[i].className = dots[i].className.replace(" active", "");
+                currentIndex = index; 
+
+                const $newSlide = slides.eq(currentIndex);
+                $newSlide.css('z-index', 15).animate({ opacity: 1 }, fadeDuration, function() {
+                    $(this).addClass('active').css('z-index', 10);
+                });
+
+                dots.removeClass('active');
+                dots.eq(currentIndex).addClass('active');
             }
 
-            slides[slideIndex - 1].style.display = "block";
-            slides[slideIndex - 1].classList.add("active");
-            dots[slideIndex - 1].className += " active";
+            slides.not(':first').css('opacity', 0); 
+            slides.eq(0).addClass('active').css('opacity', 1);
+            dots.eq(0).addClass('active');
 
-            if (type === 'top') {
-                slideIndexTop = slideIndex;
-            }
-        }
+            let slideInterval = setInterval(() => showSlide(currentIndex + 1), intervalTime);
 
-        // --- Geolocation Logic ---
+            dots.on('click', function() {
+                clearInterval(slideInterval);
+                
+                const newIndex = $(this).data('slide-index');
+                if (newIndex !== currentIndex) {
+                    showSlide(newIndex);
+                }
+
+                slideInterval = setInterval(() => showSlide(currentIndex + 1), intervalTime);
+            });
+        });
+
         function getLocation() {
             let status = document.getElementById("location-status");
             if (navigator.geolocation) {
