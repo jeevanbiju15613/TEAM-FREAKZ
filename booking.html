@@ -72,13 +72,15 @@
       <option value="Mechanic">Mechanic</option>
     </select>
 
+    <!-- Date Selection moved before Worker -->
+    <label for="date">Select Date</label>
+    <input type="date" id="date" name="date">
+
+    <!-- Worker Selection -->
     <label for="worker">Choose Worker</label>
     <select id="worker" name="worker">
       <option disabled>Select a service and date first</option>
     </select>
-
-    <label for="date">Select Date</label>
-    <input type="date" id="date" name="date">
 
     <label for="time">Select Time</label>
     <input type="time" id="time" name="time" min="07:00" max="21:00">
@@ -119,6 +121,13 @@ $(document).ready(function () {
     const dd = String(today.getDate()).padStart(2, "0");
     $("#date").attr("min", `${yyyy}-${mm}-${dd}`).attr("max", `${yyyy}-12-31`);
 
+    // --- Restore pending service if any ---
+    const pendingService = localStorage.getItem("pendingService");
+    if (pendingService) {
+        $("#service").val(pendingService);
+        localStorage.removeItem("pendingService");
+    }
+
     // Load available workers for selected service & date
     function loadAvailableWorkers() {
         const selectedDate = $("#date").val();
@@ -150,8 +159,12 @@ $(document).ready(function () {
         });
     }
 
-    // Trigger filtering whenever service or date changes
     $("#service, #date").on("change", loadAvailableWorkers);
+
+    // If service was preloaded, auto-trigger loading after service is set
+    if ($("#service").val()) {
+        loadAvailableWorkers();
+    }
 
     // Handle booking submission
     $("#bookingForm").on("submit", function(e) {
@@ -183,10 +196,25 @@ $(document).ready(function () {
 
         // Remove booked slot
         workerObj.availability = workerObj.availability.filter(s => s !== selectedSlot);
+
+        // --- Save booking for worker dashboard ---
+        const workerBookingsKey = "bookings_" + workerObj.email;
+        const workerBookings = JSON.parse(localStorage.getItem(workerBookingsKey)) || [];
+        workerBookings.unshift({
+            user: localStorage.getItem("username"),
+            service: serviceType,
+            date: date,
+            time: time,
+            status: "confirmed",
+            timestamp: new Date().toISOString()
+        });
+        localStorage.setItem(workerBookingsKey, JSON.stringify(workerBookings));
+
+        // Update worker in users array
         users[users.findIndex(u => u.email === workerEmail)] = workerObj;
         localStorage.setItem("users", JSON.stringify(users));
 
-        // Save booking for user
+        // Save booking for user history
         const historyKey = `userBookingHistory_${username}`;
         const history = JSON.parse(localStorage.getItem(historyKey)) || [];
         history.unshift({ worker: workerObj.name, service: serviceType, date, time, status: "confirmed", timestamp: new Date().toISOString() });
@@ -196,7 +224,6 @@ $(document).ready(function () {
         $("#workerName").text(workerObj.name);
         $(".notification-bar").fadeIn();
         $("#confirmation").fadeIn();
-
         $(".book-btn").text("Booking Confirmed!").css("background-color", "#4CAF50").prop("disabled", true);
 
         setTimeout(() => window.location.href = "ar.html?booking=success", 2000);
