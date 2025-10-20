@@ -17,9 +17,14 @@
     .calendar-list li { padding:10px; margin-bottom:8px; background:#f4f6fb; border-radius:6px; }
     .availability-container { margin-top:20px; }
     .availability-slot { display:flex; gap:10px; align-items:center; margin-bottom:6px; }
-    .add-slot-btn, .delete-slot-btn { padding:6px 14px; border:none; border-radius:6px; cursor:pointer; background:#4a7fe3; color:white; transition: background 0.3s; }
-    .add-slot-btn:hover, .delete-slot-btn:hover { background:#365dcf; }
+    .add-slot-btn, .delete-slot-btn, .generate-weekly-btn { padding:6px 14px; border:none; border-radius:6px; cursor:pointer; background:#4a7fe3; color:white; transition: background 0.3s; }
+    .add-slot-btn:hover, .delete-slot-btn:hover, .generate-weekly-btn:hover { background:#365dcf; }
     input[type="date"], input[type="time"] { padding:6px 8px; margin-right:6px; border-radius:6px; border:1px solid #ccc; }
+    .weekdays { display:flex; flex-wrap:wrap; gap:10px; margin:10px 0; }
+    .weekdays label { background:#eef2fb; padding:8px 12px; border-radius:6px; cursor:pointer; transition: background 0.3s; }
+    .weekdays input[type="checkbox"] { margin-right:6px; }
+    .weekdays label:hover { background:#dce4fa; }
+    h4 { margin-top:25px; color:#333; }
   </style>
 </head>
 <body>
@@ -43,11 +48,40 @@
   <ul id="bookingList" class="calendar-list"></ul>
 
   <h3>Manage Availability</h3>
+
+  <!-- Weekly Scheduler -->
   <div class="availability-container">
+    <h4>🗓️ Set Weekly Availability</h4>
+    <p style="color:#666;">Select days and times to auto-generate availability slots for the next 3 weeks.</p>
+
+    <div class="weekdays">
+      <label><input type="checkbox" value="1">Mon</label>
+      <label><input type="checkbox" value="2">Tue</label>
+      <label><input type="checkbox" value="3">Wed</label>
+      <label><input type="checkbox" value="4">Thu</label>
+      <label><input type="checkbox" value="5">Fri</label>
+      <label><input type="checkbox" value="6">Sat</label>
+      <label><input type="checkbox" value="0">Sun</label>
+    </div>
+
+    <div style="margin:10px 0;">
+      <label>Start Time:</label>
+      <input type="time" id="weekStart" min="07:00" max="21:00">
+      <label>End Time:</label>
+      <input type="time" id="weekEnd" min="07:00" max="21:00">
+    </div>
+
+    <button class="generate-weekly-btn" id="generateWeeklyBtn">Generate Weekly Schedule</button>
+
+    <hr style="margin:25px 0;">
+
+    <!-- Single Slot Adder -->
+    <h4>➕ Add Single Availability Slot</h4>
     <input type="date" id="availDate">
     <input type="time" id="availTime" min="07:00" max="21:00">
     <button class="add-slot-btn" id="addSlotBtn">Add Slot</button>
-    <div id="availabilityList" style="margin-top:10px;"></div>
+
+    <div id="availabilityList" style="margin-top:15px;"></div>
   </div>
 </div>
 
@@ -91,7 +125,6 @@ function loadDashboard() {
     return;
   }
 
-  // Display name and categories
   let categories = "";
   if (worker.categories && worker.categories.length > 0) {
     categories = worker.categories.join(", ");
@@ -103,7 +136,6 @@ function loadDashboard() {
   document.getElementById("workerNameRole").textContent =
     `Welcome, ${worker.username || worker.name} (${categories})`;
 
-  // Bookings for this worker
   const bookings = JSON.parse(localStorage.getItem("bookings_" + worker.email)) || [];
   const list = document.getElementById("bookingList");
   list.innerHTML = "";
@@ -117,24 +149,28 @@ function loadDashboard() {
     });
   }
 
-  // Notifications
   const notif = JSON.parse(localStorage.getItem("notifications_" + worker.email)) || [];
   document.getElementById("notifBar").textContent =
     notif.length > 0 ? `🔔 ${notif[notif.length-1]}` : "No new notifications.";
 
-  // Render availability
   renderAvailability(worker);
 }
 
-// Add new availability slot
+// Add single slot
 document.getElementById("addSlotBtn").addEventListener("click", () => {
   const worker = getCurrentWorker();
   if (!worker) return;
 
   const date = document.getElementById("availDate").value;
   const time = document.getElementById("availTime").value;
+
   if (!date || !time) {
     alert("⚠️ Select both date and time.");
+    return;
+  }
+
+  if (time < "07:00" || time > "21:00") {
+    alert("⚠️ Please select a time between 07:00 and 21:00.");
     return;
   }
 
@@ -153,8 +189,6 @@ document.getElementById("addSlotBtn").addEventListener("click", () => {
   localStorage.setItem("users", JSON.stringify(users));
 
   renderAvailability(worker);
-
-  // Clear inputs
   document.getElementById("availDate").value = "";
   document.getElementById("availTime").value = "";
 });
@@ -173,6 +207,63 @@ document.getElementById("availabilityList").addEventListener("click", (e) => {
 
     renderAvailability(worker);
   }
+});
+
+// Generate weekly schedule
+document.getElementById("generateWeeklyBtn").addEventListener("click", () => {
+  const worker = getCurrentWorker();
+  if (!worker) return;
+
+  const startTime = document.getElementById("weekStart").value;
+  const endTime = document.getElementById("weekEnd").value;
+
+  if (!startTime || !endTime) {
+    alert("⚠️ Please select start and end times.");
+    return;
+  }
+
+  if (startTime < "07:00" || endTime > "21:00") {
+    alert("⚠️ Allowed working hours are between 07:00 and 21:00.");
+    return;
+  }
+
+  if (endTime <= startTime) {
+    alert("⚠️ End time must be after start time.");
+    return;
+  }
+
+  const selectedDays = Array.from(document.querySelectorAll(".weekdays input:checked"))
+    .map(cb => parseInt(cb.value));
+  if (selectedDays.length === 0) {
+    alert("⚠️ Please select at least one day.");
+    return;
+  }
+
+  worker.availability = worker.availability || [];
+  const today = new Date();
+
+  for (let week = 0; week < 3; week++) {
+    for (let day = 0; day < 7; day++) {
+      const currentDate = new Date(today);
+      currentDate.setDate(today.getDate() + week * 7 + day);
+      if (selectedDays.includes(currentDate.getDay())) {
+        const dateStr = currentDate.toISOString().split("T")[0];
+        const startSlot = `${dateStr}T${startTime}`;
+        const endSlot = `${dateStr}T${endTime}`;
+        if (!worker.availability.includes(startSlot))
+          worker.availability.push(startSlot);
+        if (!worker.availability.includes(endSlot))
+          worker.availability.push(endSlot);
+      }
+    }
+  }
+
+  const users = JSON.parse(localStorage.getItem("users")) || [];
+  users[users.findIndex(u => u.email === worker.email)] = worker;
+  localStorage.setItem("users", JSON.stringify(users));
+
+  renderAvailability(worker);
+  alert("✅ Weekly schedule generated for the next 3 weeks!");
 });
 
 window.onload = loadDashboard;

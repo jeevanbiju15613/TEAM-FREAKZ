@@ -72,7 +72,7 @@
       <option value="Mechanic">Mechanic</option>
     </select>
 
-    <!-- Date Selection moved before Worker -->
+    <!-- Date Selection -->
     <label for="date">Select Date</label>
     <input type="date" id="date" name="date">
 
@@ -82,8 +82,15 @@
       <option disabled>Select a service and date first</option>
     </select>
 
+    <!-- Manual Time -->
     <label for="time">Select Time</label>
     <input type="time" id="time" name="time" min="07:00" max="21:00">
+
+    <!-- Available Slots -->
+    <label for="availableSlots">Available Slots</label>
+    <select id="availableSlots">
+      <option disabled selected>Select a worker to view available slots</option>
+    </select>
 
     <button type="submit" class="book-btn">Confirm Booking</button>
 
@@ -95,140 +102,100 @@
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
 <script>
-$(document).ready(function () {
-    const LOGGED_IN = localStorage.getItem("loggedIn") === "true";
-    const username = localStorage.getItem("username") || "Myprofile";
+  const workerSelect = document.getElementById('worker');
+  const dateInput = document.getElementById('date');
+  const slotSelect = document.getElementById('availableSlots');
+  const serviceSelect = document.getElementById('service');
+  const confirmBtn = document.getElementById('confirmBooking');
 
-    // --- Update Header ---
-    if (LOGGED_IN) {
-        $("#authBtn").text(username).css("background-color", "#4CAF50").off("click").on("click", function() {
-            window.location.href='user-dashboard.html';
-        });
+  // Generate time slots (7 AM to 9 PM)
+  function generateTimeSlots() {
+    const times = [];
+    for (let hour = 7; hour <= 21; hour++) {
+      const ampm = hour < 12 ? "AM" : "PM";
+      const displayHour = hour % 12 === 0 ? 12 : hour % 12;
+      times.push(`${displayHour.toString().padStart(2, '0')}:00 ${ampm}`);
+    }
+    return times;
+  }
+
+  // Update available slots when worker/date changes
+  function updateAvailableSlots() {
+    const workerEmail = workerSelect.value;
+    const selectedDate = dateInput.value;
+    slotSelect.innerHTML = '';
+
+    if (!workerEmail || !selectedDate) {
+      slotSelect.innerHTML = '<option value="">Select worker and date first</option>';
+      return;
     }
 
-    if (!LOGGED_IN) {
-        alert("🔒 Please log in to view and confirm your booking.");
-        window.location.replace("login.html?redirect=" + encodeURIComponent(window.location.href));
-        return;
+    const allSlots = generateTimeSlots();
+    const workerBookings = JSON.parse(localStorage.getItem(`bookings_${workerEmail}`)) || [];
+
+    // Get times already booked on this date
+    const bookedTimes = workerBookings
+      .filter(b => b.date === selectedDate)
+      .map(b => b.time);
+
+    // Only show available times
+    const availableTimes = allSlots.filter(t => !bookedTimes.includes(t));
+
+    if (availableTimes.length === 0) {
+      slotSelect.innerHTML = '<option value="">No available slots for this date</option>';
+      confirmBtn.disabled = true;
+    } else {
+      confirmBtn.disabled = false;
+      slotSelect.innerHTML = '<option value="">Select a time slot</option>';
+      availableTimes.forEach(time => {
+        const opt = document.createElement('option');
+        opt.value = time;
+        opt.textContent = time;
+        slotSelect.appendChild(opt);
+      });
+    }
+  }
+
+  // Handle booking confirmation
+  confirmBtn.addEventListener('click', () => {
+    const workerEmail = workerSelect.value;
+    const selectedDate = dateInput.value;
+    const selectedTime = slotSelect.value;
+    const service = serviceSelect.value;
+
+    if (!service || !workerEmail || !selectedDate || !selectedTime) {
+      alert("Please fill all details before confirming.");
+      return;
     }
 
-    // Date restrictions
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, "0");
-    const dd = String(today.getDate()).padStart(2, "0");
-    $("#date").attr("min", `${yyyy}-${mm}-${dd}`).attr("max", `${yyyy}-12-31`);
+    const key = `bookings_${workerEmail}`;
+    const existingBookings = JSON.parse(localStorage.getItem(key)) || [];
 
-    // --- Restore pending service if any ---
-    const pendingService = localStorage.getItem("pendingService");
-    if (pendingService) {
-        $("#service").val(pendingService);
-        localStorage.removeItem("pendingService");
+    // Double-check slot availability
+    const alreadyBooked = existingBookings.some(b => b.date === selectedDate && b.time === selectedTime);
+    if (alreadyBooked) {
+      alert("That time slot is already booked. Please choose another one.");
+      updateAvailableSlots();
+      return;
     }
 
-    // Load available workers for selected service & date
-    function loadAvailableWorkers() {
-        const selectedDate = $("#date").val();
-        const selectedService = $("#service").val();
-        const $workerSelect = $("#worker");
-        $workerSelect.empty();
-
-        if (!selectedDate || !selectedService) {
-            $workerSelect.append('<option disabled>Select a service and date first</option>');
-            return;
-        }
-
-        const users = JSON.parse(localStorage.getItem("users")) || [];
-        const availableWorkers = users.filter(u => 
-            u.role === "worker" &&
-            u.availability &&
-            u.availability.some(slot => slot.startsWith(selectedDate)) &&
-            u.categories && u.categories.includes(selectedService)
-        );
-
-        if (availableWorkers.length === 0) {
-            $workerSelect.append('<option disabled>No workers available for this service on this date</option>');
-            return;
-        }
-
-        availableWorkers.forEach(worker => {
-            const categories = worker.categories ? worker.categories.join(", ") : "";
-            $workerSelect.append(`<option value="${worker.email}">${worker.name} (${categories})</option>`);
-        });
-    }
-
-    $("#service, #date").on("change", loadAvailableWorkers);
-
-    // If service was preloaded, auto-trigger loading after service is set
-    if ($("#service").val()) {
-        loadAvailableWorkers();
-    }
-
-    // Handle booking submission
-    $("#bookingForm").on("submit", function(e) {
-        e.preventDefault();
-        const workerEmail = $("#worker").val();
-        const serviceType = $("#service").val();
-        const date = $("#date").val();
-        const time = $("#time").val();
-
-        if (!workerEmail || !date || !time || !serviceType) {
-            alert("⚠️ Please fill all fields.");
-            return;
-        }
-
-        if (time < "07:00" || time > "21:00") {
-            alert("⏰ Please select a time between 7:00 AM and 9:00 PM.");
-            $("#time").val("");
-            return;
-        }
-
-        const users = JSON.parse(localStorage.getItem("users")) || [];
-        const workerObj = users.find(u => u.email === workerEmail);
-
-        const selectedSlot = date + "T" + time;
-        if (!workerObj.availability.includes(selectedSlot)) {
-            alert("⚠️ Selected slot is no longer available.");
-            return;
-        }
-
-        // Remove booked slot
-        workerObj.availability = workerObj.availability.filter(s => s !== selectedSlot);
-
-        // --- Save booking for worker dashboard ---
-        const workerBookingsKey = "bookings_" + workerObj.email;
-        const workerBookings = JSON.parse(localStorage.getItem(workerBookingsKey)) || [];
-        workerBookings.unshift({
-            user: localStorage.getItem("username"),
-            service: serviceType,
-            date: date,
-            time: time,
-            status: "confirmed",
-            timestamp: new Date().toISOString()
-        });
-        localStorage.setItem(workerBookingsKey, JSON.stringify(workerBookings));
-
-        // Update worker in users array
-        users[users.findIndex(u => u.email === workerEmail)] = workerObj;
-        localStorage.setItem("users", JSON.stringify(users));
-
-        // Save booking for user history
-        const historyKey = `userBookingHistory_${username}`;
-        const history = JSON.parse(localStorage.getItem(historyKey)) || [];
-        history.unshift({ worker: workerObj.name, service: serviceType, date, time, status: "confirmed", timestamp: new Date().toISOString() });
-        localStorage.setItem(historyKey, JSON.stringify(history));
-
-        // Show notification
-        $("#workerName").text(workerObj.name);
-        $(".notification-bar").fadeIn();
-        $("#confirmation").fadeIn();
-        $(".book-btn").text("Booking Confirmed!").css("background-color", "#4CAF50").prop("disabled", true);
-
-        setTimeout(() => window.location.href = "ar.html?booking=success", 2000);
+    // Add new booking
+    existingBookings.push({
+      service,
+      date: selectedDate,
+      time: selectedTime,
+      status: "booked"
     });
-});
+
+    localStorage.setItem(key, JSON.stringify(existingBookings));
+
+    alert("✅ Booking confirmed successfully!");
+    updateAvailableSlots(); // Refresh available slots
+  });
+
+  workerSelect.addEventListener('change', updateAvailableSlots);
+  dateInput.addEventListener('change', updateAvailableSlots);
 </script>
 
 </body>
