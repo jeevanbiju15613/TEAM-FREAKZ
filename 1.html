@@ -172,7 +172,7 @@
         </div>
     </div>
 
-    <div class="container">
+    <div class="container" id="login">
         <div class="services-heading">
             <img src="service.png" alt="Services Logo">
             <h2 >Available Services</h2>
@@ -200,18 +200,20 @@
     <footer><a href="about.html">📚 About Us</a></footer>
 
     <script>
-        const LOGGED_IN_STATUS = localStorage.getItem("loggedIn") === "true";
-
+        // ✅ Check login and redirect
         function goToBooking(service) {
-            if (!LOGGED_IN_STATUS) {
-                const redirectUrl = "booking.html?service=" + encodeURIComponent(service);
-                alert("🔒 Please log in to proceed with your booking.");
-                window.location.href = "login.html?redirect=" + encodeURIComponent(redirectUrl);
-            } else {
-                window.location.href = "booking.html?service=" + encodeURIComponent(service);
-            }
+            //const loggedIn = localStorage.getItem("loggedIn") === "true";
+           // if (!loggedIn) {
+                alert("Please login first to continue.");
+                // Redirect to login.html with redirect to ar.html after login
+                window.location.href = "login.html?redirect=ar.html";
+                return;
+            //}
+            // If logged in → go to booking
+           // window.location.href = "booking.html?service=" + encodeURIComponent(service);
         }
-        
+
+        // --- Slideshow logic ---
         $(document).ready(function() {
             let currentIndex = 0;
             const slides = $('#top-ads-slideshow .ad-slide');
@@ -224,13 +226,9 @@
                 if (index >= slideCount) index = 0;
                 if (index < 0) index = slideCount - 1;
 
-                const $currentSlide = slides.eq(currentIndex);
-                $currentSlide.removeClass('active').animate({ opacity: 0 }, fadeDuration);
-
+                slides.eq(currentIndex).removeClass('active').animate({ opacity: 0 }, fadeDuration);
                 currentIndex = index; 
-
-                const $newSlide = slides.eq(currentIndex);
-                $newSlide.css('z-index', 15).animate({ opacity: 1 }, fadeDuration, function() {
+                slides.eq(currentIndex).css('z-index', 15).animate({ opacity: 1 }, fadeDuration, function() {
                     $(this).addClass('active').css('z-index', 10);
                 });
 
@@ -238,20 +236,17 @@
                 dots.eq(currentIndex).addClass('active');
             }
 
-            slides.not(':first').css('opacity', 0); 
+            slides.not(':first').css('opacity', 0);
             slides.eq(0).addClass('active').css('opacity', 1);
             dots.eq(0).addClass('active');
-
             let slideInterval = setInterval(() => showSlide(currentIndex + 1), intervalTime);
 
             dots.on('click', function() {
                 clearInterval(slideInterval);
-                
                 const newIndex = $(this).data('slide-index');
                 if (newIndex !== currentIndex) {
                     showSlide(newIndex);
                 }
-
                 slideInterval = setInterval(() => showSlide(currentIndex + 1), intervalTime);
             });
         });
