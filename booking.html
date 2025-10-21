@@ -1,202 +1,205 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Book a Worker - NearMe</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Book Service - NearMe</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    .login-btn {
-        background-color: #2b5bcf;
-        color: white;
-        padding: 8px 14px;
-        font-size: 14px;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        transition: background 0.3s;
+    body { font-family: Arial, sans-serif; margin:0; background:#f9f9f9; }
+    header { background:#4a7fe3; color:#fff; display:flex; justify-content:space-between; align-items:center; padding:10px 20px; }
+    .nav-right { display:flex; gap:15px; align-items:center; }
+    .logout-btn { background:#e63946; border:none; border-radius:6px; padding:6px 14px; color:#fff; cursor:pointer; }
+    .logout-btn:hover { background:#c92a36; }
+    .container { max-width:900px; margin:40px auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
+    h2 { text-align:center; color:#333; }
+    label { display:block; margin-top:15px; margin-bottom:5px; font-weight:bold; }
+    select, input[type="date"], input[type="time"] { width:100%; padding:8px; border:1px solid #ccc; border-radius:6px; }
+    button { background:#4a7fe3; color:#fff; border:none; border-radius:6px; padding:10px 16px; margin-top:20px; cursor:pointer; }
+    button:hover { background:#365dcf; }
+
+    /* ✅ Notification bar styling */
+    #notifyBar {
+      display:none;
+      position:fixed;
+      top:0;
+      left:50%;
+      transform:translateX(-50%) translateY(-100%);
+      background:#2b5bcf;
+      color:white;
+      padding:12px 20px;
+      border-radius:0 0 8px 8px;
+      font-weight:500;
+      transition:transform 0.4s ease;
+      z-index:1000;
     }
-    .notification-bar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        padding: 15px;
-        background: #4CAF50;
-        color: white;
-        text-align: center;
-        z-index: 1000;
-        font-weight: bold;
-        display:none;
-    }
-    .container { max-width: 600px; margin: 50px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-    .booking-form { display: flex; flex-direction: column; gap: 15px; }
-    .booking-form input, .booking-form select, .book-btn, .back-btn { padding: 10px; border-radius: 6px; border: 1px solid #ccc; }
-    .book-btn { background: #2b5bcf; color: white; border: none; cursor: pointer; }
-    .book-btn:hover { background: #1d3e91; }
-    .back-btn { text-align: center; display: block; margin-top: 20px; text-decoration: none; color: #333; }
-    header { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: rgba(255,255,255,0.85); box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
   </style>
 </head>
-<body class="booking-page">
+<body>
 
-<header>
-  <div class="logo-title">
-      <img src="Ellipse 4.png" alt="Worker Logo">
-      <div class="logo"><span style="color: red;">N</span>EAR<span style="color: red;">M</span>E</div>
-  </div>
-  <div class="nav-right">
-    <button class="login-btn" id="authBtn" onclick="window.location.href='login.html'">Login</button>
-  </div>
-</header>
+  <header>
+    <div class="logo-title">
+      <img src="Ellipse 4.png" alt="Logo" width="60">
+      <div class="logo"><span style="color:red;">N</span>EAR<span style="color:red;">M</span>E</div>
+    </div>
+    <div class="nav-right">
+      <a href="ar.html">🏠 Home</a>
+      <a href="user-dashboard.html">👤 My Profile</a>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </header>
 
-<div class="notification-bar">
-  ✅ Your booking with <b id="workerName"></b> is confirmed!
-</div>
+  <div class="container">
+    <h2>Book Your Service</h2>
 
-<div class="container">
-  <h2>🔧 Book a Worker</h2>
-  <form class="booking-form" id="bookingForm">
-
-    <!-- Service Selection -->
-    <label for="service">Select Service</label>
-    <select id="service" name="service">
-      <option value="">--Choose Service--</option>
+    <label for="service">Service</label>
+    <select id="service">
+      <option value="">Select Service</option>
       <option value="Electrician">Electrician</option>
       <option value="Plumber">Plumber</option>
-      <option value="Cleaner">Cleaner</option>
-      <option value="Coolie">Coolie</option>
+      <option value="Carpenter">Carpenter</option>
       <option value="Mechanic">Mechanic</option>
     </select>
 
-    <!-- Date Selection -->
     <label for="date">Select Date</label>
-    <input type="date" id="date" name="date">
+    <input type="date" id="date" min="<?php echo date('Y-m-d'); ?>">
 
-    <!-- Worker Selection -->
-    <label for="worker">Choose Worker</label>
-    <select id="worker" name="worker">
-      <option disabled>Select a service and date first</option>
+    <label for="worker">Available Workers</label>
+    <select id="worker">
+      <option value="">Select service and date first</option>
     </select>
 
-    <!-- Manual Time -->
-    <label for="time">Select Time</label>
-    <input type="time" id="time" name="time" min="07:00" max="21:00">
-
-    <!-- Available Slots -->
-    <label for="availableSlots">Available Slots</label>
-    <select id="availableSlots">
-      <option disabled selected>Select a worker to view available slots</option>
+    <label for="time">Available Slots</label>
+    <select id="time">
+      <option value="">Select worker to view slots</option>
     </select>
 
-    <button type="submit" class="book-btn">Confirm Booking</button>
+    <button id="bookBtn">Confirm Booking</button>
+  </div>
 
-    <p id="confirmation" style="display:none; color:green; margin-top:15px; font-weight:bold;">
-      ✅ Booking Confirmed! Redirecting to services...
-    </p>
-    <a href="ar.html" class="back-btn">⬅ Back to Services</a>
-  </form>
-</div>
+  <!-- ✅ Notification bar -->
+  <div id="notifyBar"></div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-  const workerSelect = document.getElementById('worker');
-  const dateInput = document.getElementById('date');
-  const slotSelect = document.getElementById('availableSlots');
-  const serviceSelect = document.getElementById('service');
-  const confirmBtn = document.getElementById('confirmBooking');
-
-  // Generate time slots (7 AM to 9 PM)
-  function generateTimeSlots() {
-    const times = [];
-    for (let hour = 7; hour <= 21; hour++) {
-      const ampm = hour < 12 ? "AM" : "PM";
-      const displayHour = hour % 12 === 0 ? 12 : hour % 12;
-      times.push(`${displayHour.toString().padStart(2, '0')}:00 ${ampm}`);
-    }
-    return times;
-  }
-
-  // Update available slots when worker/date changes
-  function updateAvailableSlots() {
-    const workerEmail = workerSelect.value;
-    const selectedDate = dateInput.value;
-    slotSelect.innerHTML = '';
-
-    if (!workerEmail || !selectedDate) {
-      slotSelect.innerHTML = '<option value="">Select worker and date first</option>';
-      return;
+  <script>
+    function logout() {
+      localStorage.removeItem("loggedIn");
+      localStorage.removeItem("loggedInUser");
+      localStorage.removeItem("username");
+      localStorage.removeItem("role");
+      window.location.href = "login.html";
     }
 
-    const allSlots = generateTimeSlots();
-    const workerBookings = JSON.parse(localStorage.getItem(`bookings_${workerEmail}`)) || [];
+    const serviceSelect = document.getElementById("service");
+    const dateInput = document.getElementById("date");
+    const workerSelect = document.getElementById("worker");
+    const timeSelect = document.getElementById("time");
+    const notifyBar = document.getElementById("notifyBar");
 
-    // Get times already booked on this date
-    const bookedTimes = workerBookings
-      .filter(b => b.date === selectedDate)
-      .map(b => b.time);
-
-    // Only show available times
-    const availableTimes = allSlots.filter(t => !bookedTimes.includes(t));
-
-    if (availableTimes.length === 0) {
-      slotSelect.innerHTML = '<option value="">No available slots for this date</option>';
-      confirmBtn.disabled = true;
-    } else {
-      confirmBtn.disabled = false;
-      slotSelect.innerHTML = '<option value="">Select a time slot</option>';
-      availableTimes.forEach(time => {
-        const opt = document.createElement('option');
-        opt.value = time;
-        opt.textContent = time;
-        slotSelect.appendChild(opt);
-      });
-    }
-  }
-
-  // Handle booking confirmation
-  confirmBtn.addEventListener('click', () => {
-    const workerEmail = workerSelect.value;
-    const selectedDate = dateInput.value;
-    const selectedTime = slotSelect.value;
-    const service = serviceSelect.value;
-
-    if (!service || !workerEmail || !selectedDate || !selectedTime) {
-      alert("Please fill all details before confirming.");
-      return;
+    // 📢 Notification
+    function showNotification(message, success = true) {
+      notifyBar.textContent = message;
+      notifyBar.style.background = success ? "#2b5bcf" : "#e74c3c";
+      notifyBar.style.display = "block";
+      setTimeout(() => (notifyBar.style.transform = "translateX(-50%) translateY(0)"), 10);
+      setTimeout(() => {
+        notifyBar.style.transform = "translateX(-50%) translateY(-100%)";
+        setTimeout(() => (notifyBar.style.display = "none"), 400);
+      }, 2500);
     }
 
-    const key = `bookings_${workerEmail}`;
-    const existingBookings = JSON.parse(localStorage.getItem(key)) || [];
+    function getAllWorkers() {
+      const users = JSON.parse(localStorage.getItem("users")) || [];
+      return users.filter(u => u.role === "worker");
+    }
 
-    // Double-check slot availability
-    const alreadyBooked = existingBookings.some(b => b.date === selectedDate && b.time === selectedTime);
-    if (alreadyBooked) {
-      alert("That time slot is already booked. Please choose another one.");
+    function updateWorkerList() {
+      workerSelect.innerHTML = '<option value="">Select service and date first</option>';
+      const selectedDate = dateInput.value;
+      const selectedService = serviceSelect.value;
+      if (!selectedDate || !selectedService) return;
+
+      const allWorkers = getAllWorkers();
+      const availableWorkers = allWorkers.filter(w =>
+        (w.service === selectedService || (w.categories && w.categories.includes(selectedService))) &&
+        w.availability &&
+        w.availability.some(slot => slot.startsWith(selectedDate))
+      );
+
+      if (availableWorkers.length === 0) {
+        workerSelect.innerHTML = '<option>No workers available on this date</option>';
+      } else {
+        workerSelect.innerHTML = '<option value="">Select a worker</option>';
+        availableWorkers.forEach(w => {
+          const opt = document.createElement("option");
+          opt.value = w.email;
+          opt.textContent = `${w.username || w.name} (${selectedService})`;
+          workerSelect.appendChild(opt);
+        });
+      }
+    }
+
+    function updateAvailableSlots() {
+      timeSelect.innerHTML = '<option value="">Select worker to view slots</option>';
+      const workerEmail = workerSelect.value;
+      const selectedDate = dateInput.value;
+      if (!workerEmail || !selectedDate) return;
+
+      const workers = getAllWorkers();
+      const worker = workers.find(w => w.email === workerEmail);
+      if (!worker) return;
+
+      const available = (worker.availability || [])
+        .filter(slot => slot.startsWith(selectedDate))
+        .map(slot => slot.split("T")[1]);
+
+      const bookings = JSON.parse(localStorage.getItem(`bookings_${workerEmail}`)) || [];
+      const bookedTimes = bookings.filter(b => b.date === selectedDate).map(b => b.time);
+
+      const freeSlots = available.filter(t => !bookedTimes.includes(t));
+      if (freeSlots.length === 0) {
+        timeSelect.innerHTML = '<option>No free slots left</option>';
+      } else {
+        timeSelect.innerHTML = '<option value="">Select time slot</option>';
+        freeSlots.forEach(t => {
+          const opt = document.createElement("option");
+          opt.value = t;
+          opt.textContent = t;
+          timeSelect.appendChild(opt);
+        });
+      }
+    }
+
+    document.getElementById("bookBtn").addEventListener("click", () => {
+      const service = serviceSelect.value;
+      const date = dateInput.value;
+      const workerEmail = workerSelect.value;
+      const time = timeSelect.value;
+
+      if (!service || !date || !workerEmail || !time) {
+        showNotification("⚠️ Please fill all fields.", false);
+        return;
+      }
+
+      const key = `bookings_${workerEmail}`;
+      const existing = JSON.parse(localStorage.getItem(key)) || [];
+
+      if (existing.some(b => b.date === date && b.time === time)) {
+        showNotification("❌ That slot is already booked!", false);
+        return;
+      }
+
+      const newBooking = { service, date, time, user: localStorage.getItem("username") || "User" };
+      existing.push(newBooking);
+      localStorage.setItem(key, JSON.stringify(existing));
+
+      showNotification("✅ Booking Confirmed!");
       updateAvailableSlots();
-      return;
-    }
-
-    // Add new booking
-    existingBookings.push({
-      service,
-      date: selectedDate,
-      time: selectedTime,
-      status: "booked"
     });
 
-    localStorage.setItem(key, JSON.stringify(existingBookings));
-
-    alert("✅ Booking confirmed successfully!");
-    updateAvailableSlots(); // Refresh available slots
-  });
-
-  workerSelect.addEventListener('change', updateAvailableSlots);
-  dateInput.addEventListener('change', updateAvailableSlots);
-</script>
+    dateInput.addEventListener("change", updateWorkerList);
+    serviceSelect.addEventListener("change", updateWorkerList);
+    workerSelect.addEventListener("change", updateAvailableSlots);
+  </script>
 
 </body>
 </html>
