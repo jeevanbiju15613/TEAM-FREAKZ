@@ -14,7 +14,9 @@
     .notification-bar { background:#fffae6; padding:10px 20px; border-bottom:1px solid #ddd; }
     .container { max-width:900px; margin:30px auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
     .calendar-list { list-style:none; padding:0; margin:0; }
-    .calendar-list li { padding:10px; margin-bottom:8px; background:#f4f6fb; border-radius:6px; }
+    .calendar-list li { padding:10px; margin-bottom:8px; background:#f4f6fb; border-radius:6px; display:flex; justify-content:space-between; align-items:center; }
+    .cancel-btn { background:#e63946; color:#fff; border:none; border-radius:6px; padding:6px 10px; cursor:pointer; }
+    .cancel-btn:hover { background:#c92a36; }
     .availability-container { margin-top:20px; }
     .availability-slot { display:flex; gap:10px; align-items:center; margin-bottom:6px; }
     .add-slot-btn, .delete-slot-btn, .generate-weekly-btn { padding:6px 14px; border:none; border-radius:6px; cursor:pointer; background:#4a7fe3; color:white; transition: background 0.3s; }
@@ -48,12 +50,9 @@
   <ul id="bookingList" class="calendar-list"></ul>
 
   <h3>Manage Availability</h3>
-
-  <!-- Weekly Scheduler -->
   <div class="availability-container">
     <h4>🗓️ Set Weekly Availability</h4>
     <p style="color:#666;">Select days and times to auto-generate availability slots for the next 3 weeks.</p>
-
     <div class="weekdays">
       <label><input type="checkbox" value="1">Mon</label>
       <label><input type="checkbox" value="2">Tue</label>
@@ -72,15 +71,12 @@
     </div>
 
     <button class="generate-weekly-btn" id="generateWeeklyBtn">Generate Weekly Schedule</button>
-
     <hr style="margin:25px 0;">
 
-    <!-- Single Slot Adder -->
     <h4>➕ Add Single Availability Slot</h4>
     <input type="date" id="availDate">
     <input type="time" id="availTime" min="07:00" max="21:00">
     <button class="add-slot-btn" id="addSlotBtn">Add Slot</button>
-
     <div id="availabilityList" style="margin-top:15px;"></div>
   </div>
 </div>
@@ -99,6 +95,24 @@ function logout() {
   localStorage.removeItem("username");
   localStorage.removeItem("role");
   window.location.href = "login.html";
+}
+
+function renderBookings(worker) {
+  const list = document.getElementById("bookingList");
+  list.innerHTML = "";
+  const bookings = JSON.parse(localStorage.getItem("bookings_" + worker.email)) || [];
+  if (bookings.length === 0) {
+    list.innerHTML = "<li>No bookings assigned yet.</li>";
+    return;
+  }
+  bookings.forEach((b, index) => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <span>${b.date} - ${b.time} (${b.duration || "1 hour"}) - ${b.service} for ${b.user}</span>
+      <button class="cancel-btn" data-index="${index}">Cancel</button>
+    `;
+    list.appendChild(li);
+  });
 }
 
 function renderAvailability(worker) {
@@ -125,149 +139,48 @@ function loadDashboard() {
     return;
   }
 
-  let categories = "";
-  if (worker.categories && worker.categories.length > 0) {
-    categories = worker.categories.join(", ");
-  } else if (worker.service) {
-    categories = worker.service; 
-  } else if (worker.role) {
-    categories = worker.role;
-  }
   document.getElementById("workerNameRole").textContent =
-    `Welcome, ${worker.username || worker.name} (${categories})`;
+    `Welcome, ${worker.username || worker.name} (${worker.service || "Worker"})`;
 
-  const bookings = JSON.parse(localStorage.getItem("bookings_" + worker.email)) || [];
-  const list = document.getElementById("bookingList");
-  list.innerHTML = "";
-  if (bookings.length === 0) {
-    list.innerHTML = "<li>No bookings assigned yet.</li>";
-  } else {
-    bookings.forEach(b => {
-      const li = document.createElement("li");
-      li.textContent = `${b.date} - ${b.time} - ${b.service} for ${b.user}`;
-      list.appendChild(li);
-    });
-  }
+  renderBookings(worker);
+  renderAvailability(worker);
 
   const notif = JSON.parse(localStorage.getItem("notifications_" + worker.email)) || [];
   document.getElementById("notifBar").textContent =
     notif.length > 0 ? `🔔 ${notif[notif.length-1]}` : "No new notifications.";
-
-  renderAvailability(worker);
 }
 
-// Add single slot
-document.getElementById("addSlotBtn").addEventListener("click", () => {
-  const worker = getCurrentWorker();
-  if (!worker) return;
-
-  const date = document.getElementById("availDate").value;
-  const time = document.getElementById("availTime").value;
-
-  if (!date || !time) {
-    alert("⚠️ Select both date and time.");
-    return;
-  }
-
-  if (time < "07:00" || time > "21:00") {
-    alert("⚠️ Please select a time between 07:00 and 21:00.");
-    return;
-  }
-
-  const slot = `${date}T${time}`;
-  worker.availability = worker.availability || [];
-  if (worker.availability.includes(slot)) {
-    alert("⚠️ This slot already exists.");
-    return;
-  }
-
-  worker.availability.push(slot);
-
-  const users = JSON.parse(localStorage.getItem("users")) || [];
-  const index = users.findIndex(u => u.email === worker.email);
-  users[index] = worker;
-  localStorage.setItem("users", JSON.stringify(users));
-
-  renderAvailability(worker);
-  document.getElementById("availDate").value = "";
-  document.getElementById("availTime").value = "";
-});
-
-// Delete slot
-document.getElementById("availabilityList").addEventListener("click", (e) => {
-  if (e.target.classList.contains("delete-slot-btn")) {
+// 🧾 Cancel Booking
+document.getElementById("bookingList").addEventListener("click", (e) => {
+  if (e.target.classList.contains("cancel-btn")) {
     const worker = getCurrentWorker();
-    if (!worker) return;
     const idx = parseInt(e.target.dataset.index);
-    worker.availability.splice(idx, 1);
+    const key = "bookings_" + worker.email;
+    const bookings = JSON.parse(localStorage.getItem(key)) || [];
+    const cancelled = bookings.splice(idx, 1)[0];
+    localStorage.setItem(key, JSON.stringify(bookings));
+
+    // restore slot
+    worker.availability = worker.availability || [];
+    worker.availability.push(`${cancelled.date}T${cancelled.time}`);
 
     const users = JSON.parse(localStorage.getItem("users")) || [];
     users[users.findIndex(u => u.email === worker.email)] = worker;
     localStorage.setItem("users", JSON.stringify(users));
 
+    // notify user
+    const notifKey = "notifications_" + cancelled.user;
+    const existingNotif = JSON.parse(localStorage.getItem(notifKey)) || [];
+    existingNotif.push(`Your booking for ${cancelled.service} on ${cancelled.date} at ${cancelled.time} was cancelled by ${worker.username}.`);
+    localStorage.setItem(notifKey, JSON.stringify(existingNotif));
+
+    alert("Booking cancelled and user notified.");
+    renderBookings(worker);
     renderAvailability(worker);
   }
 });
 
-// Generate weekly schedule
-document.getElementById("generateWeeklyBtn").addEventListener("click", () => {
-  const worker = getCurrentWorker();
-  if (!worker) return;
-
-  const startTime = document.getElementById("weekStart").value;
-  const endTime = document.getElementById("weekEnd").value;
-
-  if (!startTime || !endTime) {
-    alert("⚠️ Please select start and end times.");
-    return;
-  }
-
-  if (startTime < "07:00" || endTime > "21:00") {
-    alert("⚠️ Allowed working hours are between 07:00 and 21:00.");
-    return;
-  }
-
-  if (endTime <= startTime) {
-    alert("⚠️ End time must be after start time.");
-    return;
-  }
-
-  const selectedDays = Array.from(document.querySelectorAll(".weekdays input:checked"))
-    .map(cb => parseInt(cb.value));
-  if (selectedDays.length === 0) {
-    alert("⚠️ Please select at least one day.");
-    return;
-  }
-
-  worker.availability = worker.availability || [];
-  const today = new Date();
-
-  for (let week = 0; week < 3; week++) {
-    for (let day = 0; day < 7; day++) {
-      const currentDate = new Date(today);
-      currentDate.setDate(today.getDate() + week * 7 + day);
-      if (selectedDays.includes(currentDate.getDay())) {
-        const dateStr = currentDate.toISOString().split("T")[0];
-        const startSlot = `${dateStr}T${startTime}`;
-        const endSlot = `${dateStr}T${endTime}`;
-        if (!worker.availability.includes(startSlot))
-          worker.availability.push(startSlot);
-        if (!worker.availability.includes(endSlot))
-          worker.availability.push(endSlot);
-      }
-    }
-  }
-
-  const users = JSON.parse(localStorage.getItem("users")) || [];
-  users[users.findIndex(u => u.email === worker.email)] = worker;
-  localStorage.setItem("users", JSON.stringify(users));
-
-  renderAvailability(worker);
-  alert("✅ Weekly schedule generated for the next 3 weeks!");
-});
-
 window.onload = loadDashboard;
 </script>
-
 </body>
 </html>
