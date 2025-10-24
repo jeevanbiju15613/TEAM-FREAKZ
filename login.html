@@ -1,238 +1,167 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Login - NearMe</title>
-    <link rel="stylesheet" href="style.css">
-    <style>
-        body, html {
-            height: 100%;
-            margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f2f5; 
-        }
-        
-        .background-slot {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('login-bg.jpg') no-repeat center center/cover;
-            filter: brightness(0.7); 
-            z-index: -1;
-        }
-
-        .page-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .logo-title {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 30px;
-            color: white; 
-            text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-            font-size: 1.5em; 
-        }
-
-        .logo-title img {
-            width: 40px; 
-            height: 40px;
-        }
-        
-        .login-container { 
-            max-width: 400px; 
-            width: 100%;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 35px; 
-            border-radius: 12px; 
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-        }
-        
-        .login-container h2 { 
-            text-align: center; 
-            color: #2b5bcf;
-            margin-bottom: 25px; 
-            font-weight: 600;
-        }
-        
-        .login-form { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 18px; 
-        }
-        
-        .login-form label {
-            font-size: 0.9rem;
-            color: #555;
-            font-weight: 500;
-            display: none; /* Hide label for removed role selector */
-        }
-
-        .login-form input, 
-        .login-form select { 
-            padding: 14px 15px; 
-            border-radius: 8px; 
-            border: 1px solid #ddd; 
-            font-size: 1rem;
-            transition: border-color 0.3s;
-        }
-
-        .login-form input:focus,
-        .login-form select:focus {
-            border-color: #2b5bcf;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(43, 91, 207, 0.2);
-        }
-
-        .login-form button, 
-        .direct-btn { 
-            padding: 14px; 
-            border: none; 
-            border-radius: 8px; 
-            background: #2b5bcf;
-            color: white; 
-            cursor: pointer;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: background 0.3s, transform 0.1s;
-        }
-
-        .login-form button:hover, 
-        .direct-btn:hover { 
-            background: #1d3e91; 
-            transform: translateY(-1px);
-        }
-
-        .login-container p { 
-            text-align: center; 
-            margin-top: 20px; 
-            font-size: 0.95rem; 
-            color: #666; 
-        }
-
-        .login-container p a {
-            color: #2b5bcf;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .login-container p a:hover {
-            text-decoration: underline;
-        }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Login - NearMe</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  body, html {
+      height: 100%;
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f2f5; 
+  }
+  .background-slot {
+      position: fixed; top:0; left:0; width:100%; height:100%;
+      background:url('login-bg.jpg') no-repeat center center/cover;
+      filter:brightness(0.7); z-index:-1;
+  }
+  .page-wrapper {
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      min-height:100vh; padding:20px;
+  }
+  .logo-title {
+      display:flex; align-items:center; gap:10px; margin-bottom:30px;
+      color:white; text-shadow:0 0 5px rgba(0,0,0,0.5); font-size:1.5em;
+  }
+  .logo-title img {width:40px; height:40px;}
+  .login-container {
+      max-width:400px; width:100%; background:rgba(255,255,255,0.95);
+      padding:35px; border-radius:12px; box-shadow:0 8px 25px rgba(0,0,0,0.2);
+  }
+  .login-container h2 {text-align:center; color:#2b5bcf; margin-bottom:25px;}
+  .login-form {display:flex; flex-direction:column; gap:18px;}
+  .login-form input {
+      padding:14px 15px; border-radius:8px; border:1px solid #ddd; font-size:1rem;
+  }
+  .login-form input:focus {
+      border-color:#2b5bcf; outline:none; box-shadow:0 0 0 3px rgba(43,91,207,0.2);
+  }
+  .login-form button, .direct-btn {
+      padding:14px; border:none; border-radius:8px; background:#2b5bcf;
+      color:white; cursor:pointer; font-weight:600; text-transform:uppercase;
+      transition:background 0.3s, transform 0.1s;
+  }
+  .login-form button:hover, .direct-btn:hover {background:#1d3e91; transform:translateY(-1px);}
+  .login-container p {text-align:center; margin-top:20px; font-size:0.95rem; color:#666;}
+  .login-container p a {color:#2b5bcf; font-weight:600; text-decoration:none;}
+  .login-container p a:hover {text-decoration:underline;}
+</style>
 </head>
 <body>
-    <div class="background-slot"></div>
+<div class="background-slot"></div>
+<div class="page-wrapper">
+  <div class="logo-title">
+    <img src="Ellipse 4.png" alt="Worker Logo">
+    <div class="logo" style="color:black;"><span style="color:red;">N</span>EAR<span style="color:red;">M</span>E</div>
+  </div>
 
-    <div class="page-wrapper">
-        <div class="logo-title">
-            <img src="Ellipse 4.png" alt="Worker Logo">
-            <div class="logo" style="color: black;"><span style="color: red;">N</span>EAR<span style="color: red;">M</span>E</div>
-        </div>
+  <div class="login-container">
+    <h2>Login</h2>
+    <form class="login-form" id="loginForm">
+      <input type="text" id="username" placeholder="Username or Email" required>
+      <input type="password" id="password" placeholder="Password" required>
 
-        <div class="login-container">
-            <h2>Login</h2>
-            <form class="login-form" id="loginForm">
-                <input type="text" id="username" placeholder="Username or Email" required>
-                <input type="password" id="password" placeholder="Password" required>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <input type="checkbox" id="showPass" style="width:auto;">
+        <label for="showPass" style="font-size:0.9rem;color:#333;">Show Password</label>
+      </div>
 
-                <button type="submit">Login</button>
-            </form>
+      <button type="submit">Login</button>
+    </form>
 
-            <button class="direct-btn" onclick="window.location.href='1.html'">Go to Services</button>
-            <p>Don't have an account? <a href="register.html">Register</a></p>
-        </div>
+    <p><a href="#" id="forgotPassLink">Forgot Password?</a></p>
+    <button class="direct-btn" onclick="window.location.href='1.html'">Go to Services</button>
+    <p>Don't have an account? <a href="register.html">Register</a></p>
+  </div>
+</div>
+
+<!-- 🔐 Forgot Password Modal -->
+<div id="forgotModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;
+background:rgba(0,0,0,0.6);align-items:center;justify-content:center;z-index:1000;">
+  <div style="background:white;padding:25px;border-radius:10px;width:90%;max-width:400px;
+  box-shadow:0 5px 20px rgba(0,0,0,0.3);">
+    <h3 style="text-align:center;color:#2b5bcf;">Reset Password</h3>
+
+    <div id="stepOtp">
+      <p id="otpMsg" style="font-size:0.95rem;color:#333;"></p>
+      <input type="text" id="otpInput" placeholder="Enter OTP"
+             style="width:100%;padding:10px;border:1px solid #ccc;border-radius:6px;">
+      <p style="margin-top:10px;">New Password:</p>
+      <input type="password" id="newPassword" placeholder="New Password"
+             style="width:100%;padding:10px;border:1px solid #ccc;border-radius:6px;">
+      <button id="resetBtn" style="margin-top:10px;width:100%;">Reset Password</button>
+      <button id="closeModal" style="margin-top:15px;width:100%;background:#e74c3c;">Cancel</button>
     </div>
+  </div>
+</div>
 
 <script>
-    document.getElementById("loginForm").addEventListener("submit", function(event) {
-        event.preventDefault();
+const loginForm = document.getElementById("loginForm");
+const users = JSON.parse(localStorage.getItem("users")) || [];
 
-        // The 'role' variable is now irrelevant at the start, as it is determined later
-        const credential = document.getElementById("username").value.trim(); 
-        const password = document.getElementById("password").value.trim();
+loginForm.addEventListener("submit", function(e){
+  e.preventDefault();
+  const credential = username.value.trim();
+  const pass = password.value.trim();
 
-        if (!credential || !password) {
-            alert("Please enter username/email and password.");
-            return;
-        }
+  const user = users.find(u =>
+    (u.username && u.username.toLowerCase() === credential.toLowerCase()) ||
+    (u.email && u.email.toLowerCase() === credential.toLowerCase())
+  );
 
-        const users = JSON.parse(localStorage.getItem("users")) || [];
+  if(!user) {alert("User not found!");return;}
+  if(user.password !== pass){alert("Incorrect password!");return;}
 
-        // find by username OR by email
-        const user = users.find(u =>
-            (u.username && u.username.toLowerCase() === credential.toLowerCase()) ||
-            (u.email && u.email.toLowerCase() === credential.toLowerCase())
-        );
+  localStorage.setItem("loggedInUser", user.email);
+  localStorage.setItem("role", user.role);
+  if(user.role === "worker") window.location.href = "worker-dashboard.html";
+  else window.location.href = "ar.html";
+});
 
-        if (!user) {
-            const goReg = confirm("Account not found. Do you want to register?");
-            if (goReg) window.location.href = "register.html";
-            return;
-        }
+// 👁️ Show/Hide password
+showPass.addEventListener("change",()=>password.type=this.checked?"text":"password");
 
-        if (user.password !== password) {
-            alert("Incorrect password. Try again.");
-            return;
-        }
+// 🔐 Forgot Password
+const forgotModal=document.getElementById("forgotModal");
+const forgotLink=document.getElementById("forgotPassLink");
+const closeModal=document.getElementById("closeModal");
+const resetBtn=document.getElementById("resetBtn");
+let generatedOtp="",targetUser=null;
 
-        // --- SUCCESSFUL LOGIN ---
-        
-        // Use the role found in the stored user data to set the session and redirect.
-        const userRole = user.role || "user"; 
+forgotLink.addEventListener("click",e=>{
+  e.preventDefault();
+  const entered= document.getElementById("username").value.trim();
+  if(!entered){
+    alert("Please enter your username or email first to identify your account.");
+    return;
+  }
+  const found= users.find(u =>
+    (u.username && u.username.toLowerCase()===entered.toLowerCase()) ||
+    (u.email && u.email.toLowerCase()===entered.toLowerCase())
+  );
+  if(!found){alert("User not found!");return;}
+  targetUser=found;
+  generatedOtp=Math.floor(100000+Math.random()*900000).toString();
+  alert("OTP sent to registered number: "+found.phone+" (Demo OTP: "+generatedOtp+")");
+  document.getElementById("otpMsg").textContent="Enter the OTP sent to your registered phone ("+found.phone+"):";
+  forgotModal.style.display="flex";
+});
 
-        // ✅ Store session
-        localStorage.setItem("loggedIn", "true");
-        localStorage.setItem("loggedInUser", user.email); 
-        localStorage.setItem("username", user.username || "");
-        localStorage.setItem("role", userRole); // Use the stored role
+closeModal.addEventListener("click",()=>forgotModal.style.display="none");
 
-        // ✅ Also store profile data
-        const profileKey = `userData_${user.username || user.email}`;
-        const profileData = {
-            name: user.username || "",
-            email: user.email || credential,
-            phone: user.phone || "",
-            address: user.address || ""
-        };
-        localStorage.setItem(profileKey, JSON.stringify(profileData));
-
-        // ✅ Redirect
-        const params = new URLSearchParams(window.location.search);
-        const redirectParam = params.get("redirect");
-        
-        if (redirectParam) {
-            // Redirect to a specific page if requested (e.g., after trying to book a service)
-            try {
-                const dest = decodeURIComponent(redirectParam);
-                window.location.href = dest;
-                return;
-            } catch (err) {
-                window.location.href = redirectParam;
-                return;
-            }
-        }
-
-        // Direct to the correct dashboard based on the stored userRole
-        if (userRole === "worker") {
-            window.location.href = "worker-dashboard.html";
-        } else {
-            // Default and 'user' role redirect
-            window.location.href = "ar.html"; // Redirecting to 1.html (the main services page)
-        }
-    });
+resetBtn.addEventListener("click",()=>{
+  const otp=otpInput.value.trim();
+  const newPass=newPassword.value.trim();
+  if(!otp||!newPass){alert("Please fill all fields.");return;}
+  if(otp!==generatedOtp){alert("Incorrect OTP.");return;}
+  const idx=users.findIndex(u=>u.email===targetUser.email);
+  users[idx].password=newPass;
+  localStorage.setItem("users",JSON.stringify(users));
+  alert("✅ Password reset successful!");
+  forgotModal.style.display="none";
+});
 </script>
-
 </body>
 </html>
