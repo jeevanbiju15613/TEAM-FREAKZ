@@ -120,6 +120,14 @@ function getLocation(){
   );
 }
 
+// --- Restore service clicked on ar.html ---
+const pendingService = localStorage.getItem("pendingService");
+if(pendingService){
+    serviceSelect.value = pendingService;
+    localStorage.removeItem("pendingService");
+}
+
+// --- Worker & Slot Updates ---
 function updateWorkerList(){
   workerSelect.innerHTML='<option value="">Select service and date first</option>';
   const selectedDate=dateInput.value, selectedService=serviceSelect.value;
@@ -161,6 +169,7 @@ function updateAvailableSlots(){
   });
 }
 
+// --- Booking ---
 document.getElementById("bookBtn").addEventListener("click",()=>{
   const s=serviceSelect.value,d=dateInput.value,w=workerSelect.value,t=timeSelect.value,l=locationInput.value.trim(),dur=durationSelect.value;
   if(!s||!d||!w||!t||!l){showNotification("⚠️ Fill all fields",false);return;}
@@ -179,11 +188,9 @@ document.getElementById("bookBtn").addEventListener("click",()=>{
     status:"confirmed"
   };
 
-  // save booking for worker
   existing.push(newBooking);
   localStorage.setItem(key,JSON.stringify(existing));
 
-  // 🔹 Save booking in user's booking history
   const username = localStorage.getItem("username");
   const userHistoryKey = `userBookingHistory_${username}`;
   const userHistory = JSON.parse(localStorage.getItem(userHistoryKey)) || [];
@@ -196,7 +203,6 @@ document.getElementById("bookBtn").addEventListener("click",()=>{
   });
   localStorage.setItem(userHistoryKey, JSON.stringify(userHistory));
 
-  // remove the booked slot from worker availability
   const workers=getAllWorkers();
   const worker=workers.find(x=>x.email===w);
   if(worker){

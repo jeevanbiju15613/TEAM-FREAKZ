@@ -81,81 +81,79 @@
   </div>
 
   <script>
-    const roleSelect = document.getElementById("role");
-    const workerFields = document.getElementById("workerFields");
-    roleSelect.addEventListener("change", function() {
-      workerFields.classList.toggle("hidden", this.value !== "worker");
-    });
+const roleSelect = document.getElementById("role");
+const workerFields = document.getElementById("workerFields");
 
-    document.getElementById("registerForm").addEventListener("submit", function(event) {
-      event.preventDefault();
+roleSelect.addEventListener("change", function() {
+  workerFields.classList.toggle("hidden", this.value !== "worker");
+});
 
-      const password = document.getElementById("password").value;
-      const confirmPassword = document.getElementById("confirmPassword").value;
-      const passwordPattern = /^(?=.*[0-9]).{8,}$/;
+document.getElementById("registerForm").addEventListener("submit", function(event) {
+  event.preventDefault();
 
-      if (!passwordPattern.test(password)) {
-        alert("❌ Password must be at least 8 characters long and include at least 1 number.");
-        return;
-      }
-      if (password !== confirmPassword) {
-        alert("❌ Passwords do not match!");
-        return;
-      }
+  const password = document.getElementById("password").value;
+  const confirmPassword = document.getElementById("confirmPassword").value;
+  const passwordPattern = /^(?=.*[0-9]).{8,}$/;
 
-      const role = document.getElementById("role").value || "user";
-      const name = document.getElementById("name").value.trim();
-      const email = document.getElementById("email").value.trim().toLowerCase();
-      const username = document.getElementById("username").value.trim();
-      const phone = document.getElementById("phone").value.trim();
-      const address = document.getElementById("address").value.trim();
+  if (!passwordPattern.test(password)) {
+    alert("❌ Password must be at least 8 characters long and include at least 1 number.");
+    return;
+  }
+  if (password !== confirmPassword) {
+    alert("❌ Passwords do not match!");
+    return;
+  }
 
-      let users = JSON.parse(localStorage.getItem("users")) || [];
-      if (users.some(u => u.email === email)) {
-        alert("⚠️ An account with this email already exists.");
-        return;
-      }
+  const role = document.getElementById("role").value || "user";
+  const name = document.getElementById("name").value.trim();
+  const email = document.getElementById("email").value.trim().toLowerCase();
+  const username = document.getElementById("username").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const address = document.getElementById("address").value.trim();
 
-      let selectedCategories = [];
-      if (role === "worker") {
-        const categorySelect = document.getElementById("category");
-        selectedCategories = Array.from(categorySelect.selectedOptions).map(opt => opt.value);
-      }
+  let users = JSON.parse(localStorage.getItem("users")) || [];
+  if (users.some(u => u.email === email)) {
+    alert("⚠️ An account with this email already exists.");
+    return;
+  }
 
-      const newUser = {
-        role, name, email, username, password,
-        phone, address, categories: selectedCategories,
-        skills: document.getElementById("skills").value || "",
-        experience: document.getElementById("experience").value || "",
-        profilePic: null, availability: [], bookings: []
-      };
+  let selectedCategories = [];
+  if (role === "worker") {
+    const categorySelect = document.getElementById("category");
+    selectedCategories = Array.from(categorySelect.selectedOptions).map(opt => opt.value);
+  }
 
-      const photoInput = document.getElementById("photo");
-      const saveUser = () => {
-        users.push(newUser);
-        localStorage.setItem("users", JSON.stringify(users));
+  const newUser = {
+    role, name, email, username, password,
+    phone, address, categories: selectedCategories,
+    skills: document.getElementById("skills").value || "",
+    experience: document.getElementById("experience").value || "",
+    profilePic: null, availability: [], bookings: []
+  };
 
-        // Also save in userData (for bookings)
-        let userData = JSON.parse(localStorage.getItem("userData")) || [];
-        userData.push({
-          name: newUser.name,
-          email: newUser.email,
-          phone: newUser.phone,
-          address: newUser.address,
-          role: newUser.role
-        });
-        localStorage.setItem("userData", JSON.stringify(userData));
+  const photoInput = document.getElementById("photo");
+  const saveUser = () => {
+    users.push(newUser);
+    localStorage.setItem("users", JSON.stringify(users));
 
-        alert("✅ Account created successfully!");
-        window.location.href = "login.html";
-      };
+    // ✅ Store user details under a per-user key for dashboard
+    localStorage.setItem(`userData_${username}`, JSON.stringify({
+      name, email, phone, address, role
+    }));
 
-      if (photoInput.files.length > 0) {
-        const reader = new FileReader();
-        reader.onload = (e) => { newUser.profilePic = e.target.result; saveUser(); };
-        reader.readAsDataURL(photoInput.files[0]);
-      } else saveUser();
-    });
-  </script>
+    alert("✅ Account created successfully!");
+    window.location.href = "login.html";
+  };
+
+  if (photoInput.files.length > 0) {
+    const reader = new FileReader();
+    reader.onload = (e) => { newUser.profilePic = e.target.result; saveUser(); };
+    reader.readAsDataURL(photoInput.files[0]);
+  } else {
+    saveUser();
+  }
+});
+</script>
+
 </body>
 </html>

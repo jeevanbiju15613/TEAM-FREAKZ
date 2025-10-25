@@ -161,7 +161,9 @@ document.getElementById("loginForm").addEventListener("submit", function (event)
   }
 
   const users = JSON.parse(localStorage.getItem("users")) || [];
-  const user = users.find(u =>
+  
+  // Fix: Match by both username and email safely
+  const user = users.find(u => 
     (u.email && u.email.toLowerCase() === inputValue) ||
     (u.username && u.username.toLowerCase() === inputValue)
   );
@@ -176,25 +178,28 @@ document.getElementById("loginForm").addEventListener("submit", function (event)
     return;
   }
 
-  // Sync role & data to localStorage for session
+  // Ensure role exists
+  if (!user.role) {
+    user.role = "user"; // default
+  }
+
+  // Save session info
   localStorage.setItem("loggedIn", "true");
   localStorage.setItem("loggedInUser", user.email);
   localStorage.setItem("username", user.username);
   localStorage.setItem("role", user.role);
 
-  // Also store profile info for user role (used by bookings)
-  if (user.role === "user") {
-    localStorage.setItem("userProfile", JSON.stringify({
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      address: user.address
-    }));
-  }
+  // Save profile info for user
+  localStorage.setItem("userProfile", JSON.stringify({
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    address: user.address
+  }));
 
   alert(`✅ Welcome back, ${user.name || user.username}!`);
 
-  // Redirect
+  // Redirect based on role
   if (user.role === "worker") {
     window.location.href = "worker-dashboard.html";
   } else {
