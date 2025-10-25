@@ -14,9 +14,12 @@
     .notification-bar { background:#fffae6; padding:10px 20px; border-bottom:1px solid #ddd; }
     .container { max-width:900px; margin:30px auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
     .calendar-list { list-style:none; padding:0; margin:0; }
-    .calendar-list li { padding:10px; margin-bottom:8px; background:#f4f6fb; border-radius:6px; display:flex; justify-content:space-between; align-items:center; }
-    .cancel-btn { background:#e63946; color:#fff; border:none; border-radius:6px; padding:6px 10px; cursor:pointer; }
+    .calendar-list li { padding:10px; margin-bottom:8px; background:#f4f6fb; border-radius:6px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
+    .cancel-btn, .details-btn { border:none; border-radius:6px; padding:6px 10px; cursor:pointer; color:#fff; }
+    .cancel-btn { background:#e63946; }
     .cancel-btn:hover { background:#c92a36; }
+    .details-btn { background:#4a7fe3; }
+    .details-btn:hover { background:#365dcf; }
     .availability-container { margin-top:20px; }
     .availability-slot { display:flex; gap:10px; align-items:center; margin-bottom:6px; }
     .add-slot-btn, .delete-slot-btn, .generate-weekly-btn { padding:6px 14px; border:none; border-radius:6px; cursor:pointer; background:#4a7fe3; color:white; transition: background 0.3s; }
@@ -27,6 +30,41 @@
     .weekdays input[type="checkbox"] { margin-right:6px; }
     .weekdays label:hover { background:#dce4fa; }
     h4 { margin-top:25px; color:#333; }
+
+    /* Modal Styling */
+    .modal {
+      display:none;
+      position:fixed;
+      z-index:999;
+      left:0; top:0;
+      width:100%; height:100%;
+      background:rgba(0,0,0,0.5);
+      justify-content:center; align-items:center;
+    }
+    .modal-content {
+      background:#fff;
+      border-radius:10px;
+      padding:20px;
+      width:90%;
+      max-width:400px;
+      box-shadow:0 4px 10px rgba(0,0,0,0.3);
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn { from {opacity:0; transform:scale(0.9);} to {opacity:1; transform:scale(1);} }
+    .modal-content h3 { margin-top:0; color:#4a7fe3; }
+    .modal-content p { margin:8px 0; color:#333; }
+    .modal-content a { color:#1a73e8; text-decoration:none; }
+    .modal-content a:hover { text-decoration:underline; }
+    .close-btn {
+      background:#e63946;
+      color:#fff;
+      border:none;
+      border-radius:6px;
+      padding:6px 12px;
+      margin-top:15px;
+      float:right;
+      cursor:pointer;
+    }
   </style>
 </head>
 <body>
@@ -52,7 +90,8 @@
   <h3>Manage Availability</h3>
   <div class="availability-container">
     <h4>🗓️ Set Weekly Availability</h4>
-    <p style="color:#666;">Select days and times to auto-generate availability slots for the next 3 weeks.</p>
+    <p style="color:#666;">Select days and times to auto-generate hourly availability slots for the next 3 weeks.</p>
+
     <div class="weekdays">
       <label><input type="checkbox" value="1">Mon</label>
       <label><input type="checkbox" value="2">Tue</label>
@@ -81,6 +120,17 @@
   </div>
 </div>
 
+<!-- 📦 Modal -->
+<div id="detailsModal" class="modal">
+  <div class="modal-content">
+    <h3>Booking Details</h3>
+    <p id="modalAddress">📍 Address: </p>
+    <p id="modalPhone">📞 Phone: </p>
+    <p id="modalMap">🌐 Map: <a href="#" target="_blank">View Location</a></p>
+    <button class="close-btn" onclick="closeModal()">Close</button>
+  </div>
+</div>
+
 <script>
 function getCurrentWorker() {
   const email = localStorage.getItem("loggedInUser");
@@ -105,15 +155,85 @@ function renderBookings(worker) {
     list.innerHTML = "<li>No bookings assigned yet.</li>";
     return;
   }
+
   bookings.forEach((b, index) => {
     const li = document.createElement("li");
     li.innerHTML = `
       <span>${b.date} - ${b.time} (${b.duration || "1 hour"}) - ${b.service} for ${b.user}</span>
-      <button class="cancel-btn" data-index="${index}">Cancel</button>
+      <div>
+        <button class="details-btn" data-index="${index}">Show Details</button>
+        <button class="cancel-btn" data-index="${index}">Cancel</button>
+      </div>
     `;
     list.appendChild(li);
   });
 }
+
+// ✅ Modal popup with clickable map and phone
+document.getElementById("bookingList").addEventListener("click", (e) => {
+  if (e.target.classList.contains("details-btn")) {
+    const worker = getCurrentWorker();
+    const idx = parseInt(e.target.dataset.index);
+    const key = "bookings_" + worker.email;
+    const bookings = JSON.parse(localStorage.getItem(key)) || [];
+    const booking = bookings[idx];
+    if (!booking) return;
+
+    const userEmail = booking.user;
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+    const user = users.find(u => u.email === userEmail);
+
+    const locationText = booking.location || "No location provided";
+    let mapLink = "";
+
+    if (locationText.startsWith("Lat:")) {
+      const coords = locationText.replace("Lat:", "").replace("Lng:", "").split(",");
+      if (coords.length === 2) mapLink = `https://www.google.com/maps?q=${coords[0].trim()},${coords[1].trim()}`;
+    } else {
+      mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locationText)}`;
+    }
+
+    document.getElementById("modalAddress").textContent = `📍 Address: ${locationText}`;
+    document.getElementById("modalPhone").textContent = `📞 Phone: ${user?.phone || "Not provided"}`;
+    const mapAnchor = document.querySelector("#modalMap a");
+    mapAnchor.href = mapLink;
+    mapAnchor.textContent = "View Location";
+
+    document.getElementById("detailsModal").style.display = "flex";
+  }
+});
+
+function closeModal() {
+  document.getElementById("detailsModal").style.display = "none";
+}
+
+// Existing cancel booking logic (untouched)
+document.getElementById("bookingList").addEventListener("click", (e) => {
+  if (e.target.classList.contains("cancel-btn")) {
+    const worker = getCurrentWorker();
+    const idx = parseInt(e.target.dataset.index);
+    const key = "bookings_" + worker.email;
+    const bookings = JSON.parse(localStorage.getItem(key)) || [];
+    const cancelled = bookings.splice(idx, 1)[0];
+    localStorage.setItem(key, JSON.stringify(bookings));
+
+    worker.availability = worker.availability || [];
+    worker.availability.push(`${cancelled.date}T${cancelled.time}`);
+
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+    users[users.findIndex(u => u.email === worker.email)] = worker;
+    localStorage.setItem("users", JSON.stringify(users));
+
+    const notifKey = "notifications_" + cancelled.user;
+    const existingNotif = JSON.parse(localStorage.getItem(notifKey)) || [];
+    existingNotif.push(`Your booking for ${cancelled.service} on ${cancelled.date} at ${cancelled.time} was cancelled by ${worker.username}.`);
+    localStorage.setItem(notifKey, JSON.stringify(existingNotif));
+
+    alert("Booking cancelled and user notified.");
+    renderBookings(worker);
+    renderAvailability(worker);
+  }
+});
 
 function renderAvailability(worker) {
   const listDiv = document.getElementById("availabilityList");
@@ -149,36 +269,6 @@ function loadDashboard() {
   document.getElementById("notifBar").textContent =
     notif.length > 0 ? `🔔 ${notif[notif.length-1]}` : "No new notifications.";
 }
-
-// 🧾 Cancel Booking
-document.getElementById("bookingList").addEventListener("click", (e) => {
-  if (e.target.classList.contains("cancel-btn")) {
-    const worker = getCurrentWorker();
-    const idx = parseInt(e.target.dataset.index);
-    const key = "bookings_" + worker.email;
-    const bookings = JSON.parse(localStorage.getItem(key)) || [];
-    const cancelled = bookings.splice(idx, 1)[0];
-    localStorage.setItem(key, JSON.stringify(bookings));
-
-    // restore slot
-    worker.availability = worker.availability || [];
-    worker.availability.push(`${cancelled.date}T${cancelled.time}`);
-
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    users[users.findIndex(u => u.email === worker.email)] = worker;
-    localStorage.setItem("users", JSON.stringify(users));
-
-    // notify user
-    const notifKey = "notifications_" + cancelled.user;
-    const existingNotif = JSON.parse(localStorage.getItem(notifKey)) || [];
-    existingNotif.push(`Your booking for ${cancelled.service} on ${cancelled.date} at ${cancelled.time} was cancelled by ${worker.username}.`);
-    localStorage.setItem(notifKey, JSON.stringify(existingNotif));
-
-    alert("Booking cancelled and user notified.");
-    renderBookings(worker);
-    renderAvailability(worker);
-  }
-});
 
 window.onload = loadDashboard;
 </script>

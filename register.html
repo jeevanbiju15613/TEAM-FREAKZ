@@ -14,47 +14,23 @@
       border-radius: 10px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
-    .register-container h2 {
-      text-align: center;
-      color: #4a7fe3;
-      margin-bottom: 20px;
-    }
-    .register-form {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
+    .register-container h2 { text-align: center; color: #4a7fe3; margin-bottom: 20px; }
+    .register-form { display: flex; flex-direction: column; gap: 15px; }
     .register-form input, .register-form select, .register-form textarea {
-      padding: 12px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 0.95rem;
+      padding: 12px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.95rem;
     }
     .register-form button {
-      padding: 12px;
-      border: none;
-      border-radius: 6px;
-      background: #4a7fe3;
-      color: white;
-      font-size: 1rem;
-      cursor: pointer;
+      padding: 12px; border: none; border-radius: 6px;
+      background: #4a7fe3; color: white; font-size: 1rem; cursor: pointer;
       transition: background 0.3s;
     }
-    .register-form button:hover {
-      background: #365dcf;
-    }
-    .register-container p {
-      text-align: center;
-      margin-top: 10px;
-      font-size: 0.9rem;
-      color: #555;
-    }                
+    .register-form button:hover { background: #365dcf; }
+    .register-container p { text-align: center; margin-top: 10px; font-size: 0.9rem; color: #555; }
     .hidden { display: none; }
     .password-hint { font-size: 0.85rem; color: #666; margin-top: -10px; }
   </style>
 </head>
 <body>
-
   <header>
     <div class="logo-title">
       <img src="Ellipse 4.png" alt="Worker Logo">
@@ -82,10 +58,8 @@
       <input type="number" id="phone" placeholder="Phone Number" required>
       <input type="text" id="address" placeholder="Address" required>
 
-      <!-- Worker-specific fields -->
       <div id="workerFields" class="hidden">
         <input type="number" id="experience" placeholder="Years of Experience"><br>
-        
         <label for="category">Choose your Categories:</label><br>
         <select id="category" multiple size="5">
           <option value="Cleaner">Cleaner</option>
@@ -96,7 +70,6 @@
           <option value="Mechanic">Mechanic</option>
         </select>
         <small style="color: #666; font-size: 0.85rem;">(Hold Ctrl or Command to select multiple)</small>
-
         <br><textarea id="skills" rows="3" placeholder="Skills / Qualifications"></textarea><br>
         <label>Upload Profile Photo:</label>
         <input type="file" id="photo" accept="image/*">
@@ -110,34 +83,27 @@
   <script>
     const roleSelect = document.getElementById("role");
     const workerFields = document.getElementById("workerFields");
-
     roleSelect.addEventListener("change", function() {
-      if (this.value === "worker") {
-        workerFields.classList.remove("hidden");
-      } else {
-        workerFields.classList.add("hidden");
-      }
+      workerFields.classList.toggle("hidden", this.value !== "worker");
     });
 
     document.getElementById("registerForm").addEventListener("submit", function(event) {
       event.preventDefault();
 
-      let password = document.getElementById("password").value;
-      let confirmPassword = document.getElementById("confirmPassword").value;
-
-      let passwordPattern = /^(?=.*[0-9]).{8,}$/;
+      const password = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
+      const passwordPattern = /^(?=.*[0-9]).{8,}$/;
 
       if (!passwordPattern.test(password)) {
         alert("❌ Password must be at least 8 characters long and include at least 1 number.");
         return;
       }
-
       if (password !== confirmPassword) {
         alert("❌ Passwords do not match!");
         return;
       }
 
-      const role = roleSelect.value || "user";
+      const role = document.getElementById("role").value || "user";
       const name = document.getElementById("name").value.trim();
       const email = document.getElementById("email").value.trim().toLowerCase();
       const username = document.getElementById("username").value.trim();
@@ -145,66 +111,51 @@
       const address = document.getElementById("address").value.trim();
 
       let users = JSON.parse(localStorage.getItem("users")) || [];
-      if (users.some(u => u.username && u.username.toLowerCase() === username.toLowerCase())) {
-        alert("Username already taken. Choose another.");
-        return;
-      }
-      if (users.some(u => u.email && u.email.toLowerCase() === email.toLowerCase())) {
-        alert("An account with this email already exists. Try login.");
+      if (users.some(u => u.email === email)) {
+        alert("⚠️ An account with this email already exists.");
         return;
       }
 
-      // Collect categories if worker
       let selectedCategories = [];
       if (role === "worker") {
         const categorySelect = document.getElementById("category");
         selectedCategories = Array.from(categorySelect.selectedOptions).map(opt => opt.value);
       }
 
-      // Prepare user object
-      const user = {
-        role,
-        name,
-        email,
-        username,
-        password,
-        phone,
-        address,
-        categories: selectedCategories,
+      const newUser = {
+        role, name, email, username, password,
+        phone, address, categories: selectedCategories,
         skills: document.getElementById("skills").value || "",
         experience: document.getElementById("experience").value || "",
-        profilePic: null,
-        bookings: []
+        profilePic: null, availability: [], bookings: []
       };
 
       const photoInput = document.getElementById("photo");
-      function finalizeRegistration() {
-        users.push(user);
+      const saveUser = () => {
+        users.push(newUser);
         localStorage.setItem("users", JSON.stringify(users));
-        localStorage.setItem("loggedIn", "true");
-        localStorage.setItem("loggedInUser", user.email);
-        localStorage.setItem("username", user.username);
-        localStorage.setItem("role", user.role);
-        alert("✅ Registered and logged in.");
-        if (user.role === "worker") {
-          window.location.href = "worker-dashboard.html";
-        } else {
-          window.location.href = "user-dashboard.html";
-        }
-      }
 
-      if (photoInput && photoInput.files && photoInput.files.length > 0) {
-        const fr = new FileReader();
-        fr.onload = function(e) {
-          user.profilePic = e.target.result;
-          finalizeRegistration();
-        }
-        fr.readAsDataURL(photoInput.files[0]);
-      } else {
-        finalizeRegistration();
-      }
+        // Also save in userData (for bookings)
+        let userData = JSON.parse(localStorage.getItem("userData")) || [];
+        userData.push({
+          name: newUser.name,
+          email: newUser.email,
+          phone: newUser.phone,
+          address: newUser.address,
+          role: newUser.role
+        });
+        localStorage.setItem("userData", JSON.stringify(userData));
+
+        alert("✅ Account created successfully!");
+        window.location.href = "login.html";
+      };
+
+      if (photoInput.files.length > 0) {
+        const reader = new FileReader();
+        reader.onload = (e) => { newUser.profilePic = e.target.result; saveUser(); };
+        reader.readAsDataURL(photoInput.files[0]);
+      } else saveUser();
     });
   </script>
-
 </body>
 </html>
