@@ -30,41 +30,14 @@
     .weekdays input[type="checkbox"] { margin-right:6px; }
     .weekdays label:hover { background:#dce4fa; }
     h4 { margin-top:25px; color:#333; }
-
-    /* Modal Styling */
-    .modal {
-      display:none;
-      position:fixed;
-      z-index:999;
-      left:0; top:0;
-      width:100%; height:100%;
-      background:rgba(0,0,0,0.5);
-      justify-content:center; align-items:center;
-    }
-    .modal-content {
-      background:#fff;
-      border-radius:10px;
-      padding:20px;
-      width:90%;
-      max-width:400px;
-      box-shadow:0 4px 10px rgba(0,0,0,0.3);
-      animation: fadeIn 0.3s ease;
-    }
+    .modal { display:none; position:fixed; z-index:999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; }
+    .modal-content { background:#fff; border-radius:10px; padding:20px; width:90%; max-width:400px; box-shadow:0 4px 10px rgba(0,0,0,0.3); animation: fadeIn 0.3s ease; }
     @keyframes fadeIn { from {opacity:0; transform:scale(0.9);} to {opacity:1; transform:scale(1);} }
     .modal-content h3 { margin-top:0; color:#4a7fe3; }
     .modal-content p { margin:8px 0; color:#333; }
     .modal-content a { color:#1a73e8; text-decoration:none; }
     .modal-content a:hover { text-decoration:underline; }
-    .close-btn {
-      background:#e63946;
-      color:#fff;
-      border:none;
-      border-radius:6px;
-      padding:6px 12px;
-      margin-top:15px;
-      float:right;
-      cursor:pointer;
-    }
+    .close-btn { background:#e63946; color:#fff; border:none; border-radius:6px; padding:6px 12px; margin-top:15px; float:right; cursor:pointer; }
   </style>
 </head>
 <body>
@@ -120,7 +93,6 @@
   </div>
 </div>
 
-<!-- 📦 Modal -->
 <div id="detailsModal" class="modal">
   <div class="modal-content">
     <h3>Booking Details</h3>
@@ -169,7 +141,6 @@ function renderBookings(worker) {
   });
 }
 
-// ✅ Modal popup with clickable map and phone
 document.getElementById("bookingList").addEventListener("click", (e) => {
   if (e.target.classList.contains("details-btn")) {
     const worker = getCurrentWorker();
@@ -198,7 +169,6 @@ document.getElementById("bookingList").addEventListener("click", (e) => {
     const mapAnchor = document.querySelector("#modalMap a");
     mapAnchor.href = mapLink;
     mapAnchor.textContent = "View Location";
-
     document.getElementById("detailsModal").style.display = "flex";
   }
 });
@@ -207,7 +177,6 @@ function closeModal() {
   document.getElementById("detailsModal").style.display = "none";
 }
 
-// Existing cancel booking logic (untouched)
 document.getElementById("bookingList").addEventListener("click", (e) => {
   if (e.target.classList.contains("cancel-btn")) {
     const worker = getCurrentWorker();
@@ -250,6 +219,49 @@ function renderAvailability(worker) {
     listDiv.appendChild(div);
   });
 }
+
+// ✅ NEW WORKING WEEKLY GENERATOR
+document.getElementById("generateWeeklyBtn").addEventListener("click", () => {
+  const worker = getCurrentWorker();
+  if (!worker) {
+    alert("You must login first!");
+    return;
+  }
+
+  const selectedDays = [...document.querySelectorAll(".weekdays input:checked")].map(cb => parseInt(cb.value));
+  const startTime = document.getElementById("weekStart").value;
+  const endTime = document.getElementById("weekEnd").value;
+
+  if (selectedDays.length === 0 || !startTime || !endTime) {
+    alert("Please select days and time range!");
+    return;
+  }
+
+  worker.availability = worker.availability || [];
+  const start = new Date();
+
+  for (let week = 0; week < 3; week++) {
+    for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
+      const date = new Date(start);
+      date.setDate(start.getDate() + week * 7 + dayOffset);
+      if (selectedDays.includes(date.getDay())) {
+        let time = new Date(`${date.toISOString().split("T")[0]}T${startTime}`);
+        const end = new Date(`${date.toISOString().split("T")[0]}T${endTime}`);
+        while (time < end) {
+          worker.availability.push(`${date.toISOString().split("T")[0]}T${time.toTimeString().slice(0,5)}`);
+          time.setMinutes(time.getMinutes() + 60);
+        }
+      }
+    }
+  }
+
+  const users = JSON.parse(localStorage.getItem("users")) || [];
+  users[users.findIndex(u => u.email === worker.email)] = worker;
+  localStorage.setItem("users", JSON.stringify(users));
+
+  alert("✅ Weekly availability slots generated for next 3 weeks!");
+  renderAvailability(worker);
+});
 
 function loadDashboard() {
   const worker = getCurrentWorker();

@@ -44,7 +44,7 @@
     <option value="Electrician">Electrician</option>
     <option value="Plumber">Plumber</option>
     <option value="Coolie">Coolie</option>
-     <option value="Mechanic">Mechanic</option>
+    <option value="Mechanic">Mechanic</option>
     <option value="Cleaner">Cleaner</option>
   </select>
 
@@ -167,15 +167,43 @@ document.getElementById("bookBtn").addEventListener("click",()=>{
   const key=`bookings_${w}`;
   const existing=JSON.parse(localStorage.getItem(key))||[];
   if(existing.some(b=>b.date===d&&b.time===t)){showNotification("❌ Slot taken",false);return;}
-  const newBooking={service:s,date:d,time:t,duration:dur,user:localStorage.getItem("loggedInUser"),location:l};
+  
+  const newBooking={
+    service:s,
+    date:d,
+    time:t,
+    duration:dur,
+    user:localStorage.getItem("loggedInUser"),
+    location:l,
+    worker:w,
+    status:"confirmed"
+  };
+
+  // save booking for worker
   existing.push(newBooking);
   localStorage.setItem(key,JSON.stringify(existing));
+
+  // 🔹 Save booking in user's booking history
+  const username = localStorage.getItem("username");
+  const userHistoryKey = `userBookingHistory_${username}`;
+  const userHistory = JSON.parse(localStorage.getItem(userHistoryKey)) || [];
+  userHistory.push({
+    service: s,
+    worker: workerSelect.options[workerSelect.selectedIndex].text.split(" (")[0],
+    date: d,
+    time: t,
+    status: "confirmed"
+  });
+  localStorage.setItem(userHistoryKey, JSON.stringify(userHistory));
+
+  // remove the booked slot from worker availability
   const workers=getAllWorkers();
   const worker=workers.find(x=>x.email===w);
   if(worker){
     worker.availability=worker.availability.filter(a=>a!==`${d}T${t}`);
     localStorage.setItem("users",JSON.stringify(workers));
   }
+
   showNotification("✅ Booking confirmed!");
   setTimeout(()=>window.location.href="user-dashboard.html",1500);
 });
